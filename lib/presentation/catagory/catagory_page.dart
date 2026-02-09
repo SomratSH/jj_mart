@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/presentation/catagory/category_wise_product.dart';
 import 'package:jj_mart/provider/category_provider/category_provider.dart';
 import 'package:provider/provider.dart';
 // import 'category_provider.dart';
@@ -127,6 +128,16 @@ class _CategoryPageState extends State<CategoryPage> {
         child: InkWell(
           onTap: () {
             // Navigate to Product list by category.id
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CategoryWiseProduct(
+                  categoryId: category.id!,
+                  categoryName: category.name!,
+                ),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
