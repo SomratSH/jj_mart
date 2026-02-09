@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/provider/auth_provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class JMartCreateAccountScreen extends StatefulWidget {
   const JMartCreateAccountScreen({super.key});
 
   @override
-  State<JMartCreateAccountScreen> createState() => _JMartCreateAccountScreenState();
+  State<JMartCreateAccountScreen> createState() =>
+      _JMartCreateAccountScreenState();
 }
 
 class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
@@ -12,7 +15,7 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  
+
   String? selectedArea;
   final List<String> areas = [
     'Dhaka',
@@ -26,7 +29,17 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
   ];
 
   @override
+  void dispose() {
+    nameController.dispose();
+    mobileController.dispose();
+    addressController.dispose();
+    passwordController.dispose();
+    super.dispose(); // Always call super at the end
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -42,7 +55,6 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                 child: Image.asset(
                   'assets/logo/logo.png', // Replace with your logo asset
                   height: 100,
-                 
                 ),
               ),
 
@@ -83,7 +95,10 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF1565C0),
+                      width: 2,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -116,7 +131,10 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF1565C0),
+                      width: 2,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -138,10 +156,7 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   value: selectedArea,
                   hint: Text(
                     'Select Area',
-                    style: TextStyle(
-                      color: Colors.grey.shade400,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
                   ),
                   icon: Icon(
                     Icons.keyboard_arrow_down,
@@ -197,7 +212,10 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF1565C0),
+                      width: 2,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -230,7 +248,10 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF1565C0),
+                      width: 2,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -245,15 +266,17 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Handle account creation
-                    final name = nameController.text;
-                    final mobile = mobileController.text;
-                    final address = addressController.text;
-                    final password = passwordController.text;
-                    
-                    if (name.isEmpty || mobile.isEmpty || selectedArea == null || 
-                        address.isEmpty || password.isEmpty) {
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    final mobile = mobileController.text.trim();
+                    final address = addressController.text.trim();
+                    final password = passwordController.text.trim();
+
+                    if (name.isEmpty ||
+                        mobile.isEmpty ||
+                        selectedArea == null ||
+                        address.isEmpty ||
+                        password.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Please fill in all fields'),
@@ -262,15 +285,16 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                       );
                       return;
                     }
-                    
-                    // Add your account creation logic here
-                    print('Name: $name, Mobile: $mobile, Area: $selectedArea, Address: $address');
-                    
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Account created successfully!'),
-                        backgroundColor: Colors.green,
-                      ),
+
+                    // final areaId = areaMap[selectedArea]!;
+
+                    await controller.register(
+                      name: name,
+                      mobile: mobile,
+                      password: password,
+                      address: address,
+                      areaId: "1",
+                      context: context,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -280,14 +304,16 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: controller.isLoading
+                      ? CircularProgressIndicator()
+                      : Text(
+                          'Continue',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
 
@@ -297,15 +323,6 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    mobileController.dispose();
-    addressController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 }
 
@@ -322,10 +339,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'J-Mart',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const JMartCreateAccountScreen(),
     );
   }

@@ -8,7 +8,7 @@ class FavouritePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
-         decoration: const BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -28,19 +28,22 @@ class FavouritePage extends StatelessWidget {
               child: Column(
                 children: [
                   Center(
-                              child: Text(
-                                "Favourite",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                    child: Text(
+                      "Favourite",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   TextField(
                     decoration: InputDecoration(
                       hintText: "Search any Product...",
-                      hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      hintStyle: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 14,
+                      ),
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
                       filled: true,
                       fillColor: Colors.white,
@@ -51,8 +54,8 @@ class FavouritePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20,),
-                   buildProductGrid(itemCount: 6),
+                  SizedBox(height: 20),
+                  buildProductGrid(),
                 ],
               ),
             ),

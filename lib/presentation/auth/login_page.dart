@@ -3,7 +3,8 @@ import 'package:jj_mart/presentation/auth/forgot_password_page.dart';
 import 'package:jj_mart/presentation/auth/sign_up_screen.dart';
 import 'package:jj_mart/presentation/home/home_page.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
-
+import 'package:jj_mart/provider/auth_provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class JMartSignInScreen extends StatefulWidget {
   const JMartSignInScreen({super.key});
@@ -18,6 +19,7 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -93,7 +95,10 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.blue.shade700, width: 2),
+                    borderSide: BorderSide(
+                      color: Colors.blue.shade700,
+                      width: 2,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -126,7 +131,10 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.blue.shade700, width: 2),
+                    borderSide: BorderSide(
+                      color: Colors.blue.shade700,
+                      width: 2,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -134,18 +142,25 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 10,),
+              SizedBox(height: 10),
               InkWell(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (_)=> ForgotPasswordScreen()));
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ForgotPasswordScreen()),
+                  );
                 },
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text("Forgot Password", style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF1565C0),
-                          fontWeight: FontWeight.w600,
-                        ),)),
+                  child: Text(
+                    "Forgot Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF1565C0),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -153,11 +168,11 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     // Handle sign in
                     final mobile = mobileController.text;
                     final password = passwordController.text;
-                    
+
                     if (mobile.isEmpty || password.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -166,10 +181,14 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                         ),
                       );
                       return;
-                    }else{
-                      Navigator.push(context, MaterialPageRoute(builder: (_)=> LandingPage()));
+                    } else {
+                      await controller.login(
+                        context: context,
+                        password: password,
+                        phone: mobile,
+                      );
                     }
-                    
+
                     // Add your sign in logic here
                     print('Mobile: $mobile, Password: $password');
                   },
@@ -199,16 +218,18 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                 children: [
                   Text(
                     "Don't have an Account? ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                   ),
                   GestureDetector(
                     onTap: () {
                       // Navigate to create account screen
                       print('Navigate to Create Account');
-                      Navigator.push(context, MaterialPageRoute(builder: (_)=> JMartCreateAccountScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => JMartCreateAccountScreen(),
+                        ),
+                      );
                     },
                     child: const Text(
                       'Create Account',

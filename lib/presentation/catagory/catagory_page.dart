@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/provider/category_provider/category_provider.dart';
+import 'package:provider/provider.dart';
+// import 'category_provider.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -8,23 +11,20 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  // Navigation State
-  int _selectedIndex = 1; // Index 1 is 'Category'
-
-  // Data for the list
-  final List<String> categories = [
-    "Baby Care",
-    "Health & Wellness",
-    "Home Care",
-    "Personal Care",
-    "Stationery",
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Fetch data when page loads
+    Future.delayed(Duration.zero, () {
+      context.read<CategoryProvider>().fetchCategories();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final categoryProvider = context.watch<CategoryProvider>();
+
     return Scaffold(
-      // We extend body behind app bar to let gradient flow if we used a transparent app bar,
-      // but here we will build a custom body container to handle the gradient background.
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -33,10 +33,10 @@ class _CategoryPageState extends State<CategoryPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1E60AA), // Deep Blue at top
-              Color(0xFF2E77BD), // Mid Blue
-              Color(0xFFB0C4DE), // Light Steel Blue
-              Color(0xFFE0E5EC), // Light Greyish at bottom
+              Color(0xFF1E60AA),
+              Color(0xFF2E77BD),
+              Color(0xFFB0C4DE),
+              Color(0xFFE0E5EC),
             ],
             stops: [0.0, 0.3, 0.7, 1.0],
           ),
@@ -45,30 +45,17 @@ class _CategoryPageState extends State<CategoryPage> {
           child: Column(
             children: [
               // --- Header ---
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-                child: Row(
-                  children: [
-                   
-                    const Expanded(
-                      child: Center(
-                        child: Text(
-                          "All Category",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Invisible widget to balance the row so title is perfectly centered
-                    const SizedBox(width: 40), 
-                  ],
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  "All Category",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 10),
 
               // --- Search Bar ---
               Padding(
@@ -82,7 +69,6 @@ class _CategoryPageState extends State<CategoryPage> {
                   child: const TextField(
                     decoration: InputDecoration(
                       hintText: "Search any Product..",
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
                       prefixIcon: Icon(Icons.search, color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 14),
@@ -93,67 +79,101 @@ class _CategoryPageState extends State<CategoryPage> {
 
               const SizedBox(height: 30),
 
-              // --- Category List ---
+              // --- Category List (Dynamic) ---
               Expanded(
-                child: ListView.builder(
-                  itemCount: categories.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                child: categoryProvider.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                    : categoryProvider.categories.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "No Categories Found",
+                          style: TextStyle(color: Colors.white),
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(10),
-                            onTap: () {
-                              // Handle Category Tap
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Row(
-                                children: [
-                                  // The icon in the image looks like a shopping cart for all items
-                                  const Icon(Icons.shopping_cart, color: Colors.black, size: 22),
-                                  const SizedBox(width: 16),
-                                  Text(
-                                    categories[index],
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 16),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: categoryProvider.categories.length,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemBuilder: (context, index) {
+                          final category = categoryProvider.categories[index];
+                          return _buildCategoryItem(category);
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
         ),
       ),
-      
-    
+    );
+  }
+
+  Widget _buildCategoryItem(category) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Container(
+        height: 65,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () {
+            // Navigate to Product list by category.id
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                // Category Image or Default Icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: category.image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            category.image,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.shopping_bag_outlined,
+                          color: Color(0xFF1E60AA),
+                        ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  category.name ?? "Unknown",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey,
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

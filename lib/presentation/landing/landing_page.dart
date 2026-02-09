@@ -14,12 +14,18 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
   int _selectedIndex = 0;
-  List<Widget> page = [HomePage(), CategoryPage(), AllProductPage(), FavouritePage(), ProfilePage()];
+  List<Widget> page = [
+    HomePage(),
+    CategoryPage(),
+    AllProductPage(),
+    FavouritePage(),
+    CartPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  Colors.white, // Light grey-blue bg
+      backgroundColor: Colors.white, // Light grey-blue bg
       // Custom AppBar area
       body: page[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -32,18 +38,28 @@ class _LandingPageState extends State<LandingPage> {
         showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: "Category"),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: "All Products"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorite"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Cart"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: "Category",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: "All Products",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: "Favorite",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: "Cart",
+          ),
         ],
       ),
     );
   }
 
   // --- Widgets ---
-
- 
 }
 
 class ProductCard extends StatelessWidget {
@@ -51,6 +67,7 @@ class ProductCard extends StatelessWidget {
   final String title;
   final String price;
   final String oldPrice;
+  final String? tag;
 
   const ProductCard({
     super.key,
@@ -58,6 +75,7 @@ class ProductCard extends StatelessWidget {
     required this.title,
     required this.price,
     required this.oldPrice,
+    this.tag,
   });
 
   @override
@@ -87,7 +105,8 @@ class ProductCard extends StatelessWidget {
                     child: Image.network(
                       imageUrl,
                       fit: BoxFit.contain,
-                      errorBuilder: (c, o, s) => const Icon(Icons.image, size: 50, color: Colors.grey),
+                      errorBuilder: (c, o, s) =>
+                          const Icon(Icons.image, size: 50, color: Colors.grey),
                     ),
                   ),
                 ),
@@ -96,7 +115,10 @@ class ProductCard extends StatelessWidget {
                   top: 0,
                   left: 0,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: const BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.only(
@@ -104,9 +126,13 @@ class ProductCard extends StatelessWidget {
                         bottomRight: Radius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      "Offer",
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    child: Text(
+                      tag!,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -114,12 +140,16 @@ class ProductCard extends StatelessWidget {
                 const Positioned(
                   top: 5,
                   right: 5,
-                  child: Icon(Icons.favorite_border, color: Colors.grey, size: 20),
+                  child: Icon(
+                    Icons.favorite_border,
+                    color: Colors.grey,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
           ),
-          
+
           // Details Area
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),

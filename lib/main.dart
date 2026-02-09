@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:jj_mart/presentation/auth/login_page.dart';
 import 'package:jj_mart/presentation/auth/splash_screen.dart';
+import 'package:jj_mart/provider/auth_provider/auth_provider.dart';
+import 'package:jj_mart/provider/category_provider/category_provider.dart';
+import 'package:jj_mart/provider/home_provider/home_provider.dart';
+import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(
+          create: (_) => HomeProvider()
+            ..getSliders()
+            ..getOfferProducts()
+            ..fetchTopSellingProducts(),
+        ),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -12,12 +33,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-      ),
-      home: SplashScreen()
-    );
+    return MaterialApp(theme: ThemeData(), home: SplashScreen());
   }
 }
-

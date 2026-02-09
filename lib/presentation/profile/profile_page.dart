@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class CartPage extends StatefulWidget {
+  const CartPage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<CartPage> createState() => _CartPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _CartPageState extends State<CartPage> {
   final List<CartItem> cartItems = [
     CartItem(
       name: 'Toothpaste Dabur\nZenfresh 145gm',
@@ -34,9 +34,8 @@ class _ProfilePageState extends State<ProfilePage> {
     final subTotal = total + deliveryCharge;
 
     return Scaffold(
-   
       body: DecoratedBox(
-         decoration: const BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -56,13 +55,13 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-            'Shopping Cart',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+                  'Shopping Cart',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 // Cart Items
                 ...cartItems.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -72,9 +71,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: _buildCartItem(item, index),
                   );
                 }).toList(),
-          
+
                 const SizedBox(height: 16),
-          
+
                 // Price Summary Card
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -109,9 +108,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-          
+
                 const SizedBox(height: 16),
-          
+
                 // Clear Cart Button
                 OutlinedButton.icon(
                   onPressed: () {
@@ -136,9 +135,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
-          
+
                 const SizedBox(height: 16),
-          
+
                 // Delivery Address Card
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -191,9 +190,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-          
+
                 const SizedBox(height: 16),
-          
+
                 // Place Order Button
                 ElevatedButton(
                   onPressed: () {
@@ -206,7 +205,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                       return;
                     }
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Order placed successfully!'),
@@ -231,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-          
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -402,9 +401,7 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -420,7 +417,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Select Area Dropdown
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -435,17 +432,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     hintText: 'Select Area',
                   ),
                   items: ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi']
-                      .map((area) => DropdownMenuItem(
-                            value: area,
-                            child: Text(area),
-                          ))
+                      .map(
+                        (area) =>
+                            DropdownMenuItem(value: area, child: Text(area)),
+                      )
                       .toList(),
                   onChanged: (value) {},
                 ),
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Address Field
               TextField(
                 controller: addressController,
@@ -463,9 +460,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Mobile Number Field
               TextField(
                 controller: mobileController,
@@ -484,9 +481,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Save Button
               ElevatedButton(
                 onPressed: () {
@@ -527,10 +524,5 @@ class CartItem {
   double price;
   int quantity;
 
-  CartItem({
-    required this.name,
-    required this.price,
-    required this.quantity,
-  });
+  CartItem({required this.name, required this.price, required this.quantity});
 }
-

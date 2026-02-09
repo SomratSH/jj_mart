@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:jj_mart/presentation/contact/about_screen.dart';
 import 'package:jj_mart/presentation/contact/edit_profile.dart';
 import 'package:jj_mart/presentation/contact/terms_screen.dart';
 import 'package:jj_mart/presentation/contact/track_order_screen.dart';
+import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
+import 'package:provider/provider.dart';
 
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
@@ -13,11 +16,20 @@ class ContactScreen extends StatefulWidget {
 
 class _ContactScreenState extends State<ContactScreen> {
   int _selectedIndex = 4; // Profile tab selected
+  @override
+  void initState() {
+    super.initState();
+    // Fetch profile data when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().fetchProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final profileProvider = context.watch<ProfileProvider>();
+    final user = profileProvider.profile;
     return Scaffold(
-  
       appBar: AppBar(
         backgroundColor: Color(0xFF1E60AA),
         elevation: 0,
@@ -36,7 +48,7 @@ class _ContactScreenState extends State<ContactScreen> {
         centerTitle: true,
       ),
       body: DecoratedBox(
-         decoration: const BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -52,7 +64,7 @@ class _ContactScreenState extends State<ContactScreen> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-        
+
             // Profile Picture
             Container(
               width: 80,
@@ -63,28 +75,36 @@ class _ContactScreenState extends State<ContactScreen> {
                 color: Colors.white,
               ),
               child: ClipOval(
-                child: Icon(
-                  Icons.person,
-                  size: 50,
-                  color: Colors.grey.shade600,
-                ),
+                child:
+                    (user?.customerImage != null &&
+                        user!.customerImage!.isNotEmpty)
+                    ? Image.network(
+                        user.customerImage!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.person, size: 50),
+                      )
+                    : Icon(Icons.person, size: 50, color: Colors.grey.shade600),
               ),
             ),
-        
+
             const SizedBox(height: 12),
-        
-            // User Name
-            const Text(
-              'Samrat Hossain',
-              style: TextStyle(
+
+            // User Name - Dynamic
+            Text(
+              user?.customerName ?? 'Guest User',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
-        
+            Text(
+              user?.customerMobile ?? '',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
             const SizedBox(height: 30),
-        
+
             // White Container with Options
             Expanded(
               child: Container(
@@ -110,7 +130,7 @@ class _ContactScreenState extends State<ContactScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-        
+
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.lightBlue.shade50,
@@ -124,7 +144,12 @@ class _ContactScreenState extends State<ContactScreen> {
                               title: 'Edit profile',
                               onTap: () {
                                 print('Edit profile tapped');
-                                Navigator.push(context, MaterialPageRoute(builder: (_)=> EditProfileScreen()));
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => EditProfileScreen(),
+                                  ),
+                                );
                               },
                             ),
                             Divider(
@@ -137,15 +162,20 @@ class _ContactScreenState extends State<ContactScreen> {
                               iconColor: Colors.green,
                               title: 'Track order',
                               onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_)=> TrackOrderScreen()));
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => TrackOrderScreen(),
+                                  ),
+                                );
                               },
                             ),
                           ],
                         ),
                       ),
-        
+
                       const SizedBox(height: 20),
-        
+
                       // Support & About Section
                       const Text(
                         'Support & About',
@@ -156,7 +186,7 @@ class _ContactScreenState extends State<ContactScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-        
+
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.lightBlue.shade50,
@@ -170,7 +200,12 @@ class _ContactScreenState extends State<ContactScreen> {
                               title: 'About',
                               onTap: () {
                                 print('About tapped');
-                                 Navigator.push(context, MaterialPageRoute(builder: (_)=> AboutScreen()));
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AboutScreen(),
+                                  ),
+                                );
                               },
                             ),
                             Divider(
@@ -184,15 +219,20 @@ class _ContactScreenState extends State<ContactScreen> {
                               title: 'Terms and Policies',
                               onTap: () {
                                 print('Terms and Policies tapped');
-                                 Navigator.push(context, MaterialPageRoute(builder: (_)=> TermsScreen()));
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => TermsScreen(),
+                                  ),
+                                );
                               },
                             ),
                           ],
                         ),
                       ),
-        
+
                       const SizedBox(height: 20),
-        
+
                       // Log Out Button
                       SizedBox(
                         width: double.infinity,
@@ -223,9 +263,9 @@ class _ContactScreenState extends State<ContactScreen> {
                           ),
                         ),
                       ),
-        
+
                       const SizedBox(height: 16),
-        
+
                       // Delete Account Button
                       SizedBox(
                         width: double.infinity,
@@ -256,7 +296,7 @@ class _ContactScreenState extends State<ContactScreen> {
                           ),
                         ),
                       ),
-        
+
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -266,9 +306,6 @@ class _ContactScreenState extends State<ContactScreen> {
           ],
         ),
       ),
-     
-        
-      
     );
   }
 
@@ -290,11 +327,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 20,
-              ),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -307,11 +340,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 ),
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.grey.shade400,
-              size: 24,
-            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 24),
           ],
         ),
       ),
@@ -322,15 +351,10 @@ class _ContactScreenState extends State<ContactScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Log Out',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         content: const Text(
           'Are you sure you want to log out?',
@@ -341,10 +365,7 @@ class _ContactScreenState extends State<ContactScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 15),
             ),
           ),
           ElevatedButton(
@@ -365,10 +386,7 @@ class _ContactScreenState extends State<ContactScreen> {
             ),
             child: const Text(
               'Log Out',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 15),
             ),
           ),
         ],
@@ -380,9 +398,7 @@ class _ContactScreenState extends State<ContactScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Delete Account',
           style: TextStyle(
@@ -400,10 +416,7 @@ class _ContactScreenState extends State<ContactScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 15),
             ),
           ),
           ElevatedButton(
@@ -424,10 +437,7 @@ class _ContactScreenState extends State<ContactScreen> {
             ),
             child: const Text(
               'Delete',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 15),
             ),
           ),
         ],
