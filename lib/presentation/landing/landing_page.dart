@@ -68,6 +68,7 @@ class ProductCard extends StatelessWidget {
   final String price;
   final String oldPrice;
   final String? tag;
+  final Function()  onTapCart;
 
   const ProductCard({
     super.key,
@@ -76,6 +77,7 @@ class ProductCard extends StatelessWidget {
     required this.price,
     required this.oldPrice,
     this.tag,
+    required this.onTapCart
   });
 
   @override
@@ -196,7 +198,9 @@ class ProductCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      onTapCart();
+                    },
                     child: const Text(
                       "Add To Cart",
                       style: TextStyle(fontSize: 11, color: Colors.white),

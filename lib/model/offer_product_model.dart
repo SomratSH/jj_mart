@@ -6,6 +6,7 @@ class OfferProductModel {
   final double discountPercent;
   final String productImage;
   final int stock;
+  final String purchasePrice;
 
   OfferProductModel({
     required this.slNo,
@@ -15,6 +16,7 @@ class OfferProductModel {
     required this.discountPercent,
     required this.productImage,
     required this.stock,
+    required this.purchasePrice
   });
 
   factory OfferProductModel.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class OfferProductModel {
           : (json['discount'] ?? 0.0),
       productImage: json['product_image'] ?? '',
       stock: json['current_stock'] ?? 0,
+      purchasePrice: json["Product_Purchase_Rate"]
     );
   }
 }

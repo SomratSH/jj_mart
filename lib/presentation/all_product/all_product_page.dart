@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
+import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:jj_mart/provider/home_provider/home_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -116,6 +117,24 @@ class _AllProductPageState extends State<AllProductPage> {
                             itemBuilder: (context, index) {
                               final product = provider.offerProducts[index];
                               return ProductCard(
+                                 onTapCart: ()async{
+           
+      await Provider.of<CartProvider>(context, listen: false).addToCart(
+        context: context,
+        productId: product.slNo,
+        name: product.name,
+        price: product.discountAmount.isNotEmpty ? double.parse(product.discountAmount.toString()) : double.parse(product.sellingPrice),
+        productQty: 1,
+        purchasePrice: double.parse(product.purchasePrice.toString()),
+        image: "sample.jpg",
+        quantity: 1,
+      );
+      
+   
+    
+
+ 
+            },
                                 tag: "Offer",
                                 imageUrl: product.productImage,
                                 title: product.name,
