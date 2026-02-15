@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -26,6 +28,7 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<CartProvider>();
     final total = cartItems.fold<double>(
       0,
       (sum, item) => sum + (item.price * item.quantity),
@@ -49,190 +52,193 @@ class _CartPageState extends State<CartPage> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Shopping Cart',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                // Cart Items
-                ...cartItems.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _buildCartItem(item, index),
-                  );
-                }).toList(),
-
-                const SizedBox(height: 16),
-
-                // Price Summary Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildPriceRow('Total :', total.toStringAsFixed(0)),
-                      const SizedBox(height: 8),
-                      _buildPriceRow(
-                        'Delivery Charge :',
-                        deliveryCharge.toStringAsFixed(0),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Purchase at least 2000 taka more for free delivery',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPriceRow(
-                        'Sub Total :',
-                        subTotal.toStringAsFixed(0),
-                        isTotal: true,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Clear Cart Button
-                OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      cartItems.clear();
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Cart cleared'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Clear Cart'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF1565C0),
-                    side: const BorderSide(color: Color(0xFF1565C0)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+          child: RefreshIndicator(
+            onRefresh: () async {},
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Shopping Cart',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                ),
+                  // Cart Items
+                  ...cartItems.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildCartItem(item, index),
+                    );
+                  }).toList(),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                // Delivery Address Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Confirm Delivery Address',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1565C0),
+                  // Price Summary Card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildPriceRow('Total :', total.toStringAsFixed(0)),
+                        const SizedBox(height: 8),
+                        _buildPriceRow(
+                          'Delivery Charge :',
+                          deliveryCharge.toStringAsFixed(0),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        deliveryAddress,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Number : $phoneNumber',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton(
-                        onPressed: () {
-                          _showChangeLocationDialog(context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF1565C0),
-                          side: const BorderSide(color: Color(0xFF1565C0)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Purchase at least 2000 taka more for free delivery',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
                           ),
-                          minimumSize: const Size(double.infinity, 40),
+                          textAlign: TextAlign.center,
                         ),
-                        child: const Text('Change Location'),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        _buildPriceRow(
+                          'Sub Total :',
+                          subTotal.toStringAsFixed(0),
+                          isTotal: true,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                // Place Order Button
-                ElevatedButton(
-                  onPressed: () {
-                    if (cartItems.isEmpty) {
+                  // Clear Cart Button
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        cartItems.clear();
+                      });
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Cart is empty'),
+                          content: Text('Cart cleared'),
                           backgroundColor: Colors.red,
                         ),
                       );
-                      return;
-                    }
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Order placed successfully!'),
-                        backgroundColor: Colors.green,
+                    },
+                    icon: const Icon(Icons.close, size: 18),
+                    label: const Text('Clear Cart'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF1565C0),
+                      side: const BorderSide(color: Color(0xFF1565C0)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Place Order',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 16),
+
+                  // Delivery Address Card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Confirm Delivery Address',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1565C0),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          deliveryAddress,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Number : $phoneNumber',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () {
+                            _showChangeLocationDialog(context);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF1565C0),
+                            side: const BorderSide(color: Color(0xFF1565C0)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(double.infinity, 40),
+                          ),
+                          child: const Text('Change Location'),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Place Order Button
+                  ElevatedButton(
+                    onPressed: () {
+                      if (cartItems.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Cart is empty'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Order placed successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1565C0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Place Order',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),

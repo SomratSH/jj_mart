@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jj_mart/model/cart_item_model.dart';
+import 'package:jj_mart/model/cart_response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class CartProvider with ChangeNotifier {
   Map<String, CartItemModel> _items = {};
@@ -20,15 +20,15 @@ class CartProvider with ChangeNotifier {
     required double purchasePrice,
     required String image,
     required int quantity,
-    required BuildContext context
+    required BuildContext context,
   }) async {
-     final prefs = await SharedPreferences.getInstance();
-      final String? token = prefs.getString("token");
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
     _isLoading = true;
     notifyListeners();
 
     const url = 'https://jmartbd.com/api/shopping_cart/add';
-    
+
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -41,22 +41,23 @@ class CartProvider with ChangeNotifier {
           "product_image": image,
           "quantity": quantity,
         }),
-         headers:    {
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-        }
-
+        },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         // Parsing the dynamic "cart" map
         Map<String, dynamic> cartData = data['cart'];
-        _items = cartData.map((key, value) => MapEntry(key, CartItemModel.fromJson(value)));
-        
+        _items = cartData.map(
+          (key, value) => MapEntry(key, CartItemModel.fromJson(value)),
+        );
+
         print(data['message']);
-       ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Successfully updated cart"),
             backgroundColor: Colors.green,
@@ -70,5 +71,29 @@ class CartProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  CartResponse cartResponse = CartResponse();
+  Future<void> getCartApi() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
+    try {
+      // Replace with your actual URL
+      final response = await http.get(
+        Uri.parse('https://jmartbd.com/api/shopping_cart/load_cart'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        print(response.body);
+        cartResponse = CartResponse.fromJson(jsonDecode(response.body));
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error fetching cart: $e");
+    }
+ 
   }
 }

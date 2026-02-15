@@ -22,7 +22,7 @@ void main() {
         ),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_)=> CartProvider())
+        ChangeNotifierProvider(create: (_) => CartProvider()..getCartApi()),
       ],
       child: const MyApp(),
     ),
