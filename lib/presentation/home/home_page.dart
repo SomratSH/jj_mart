@@ -249,24 +249,15 @@ Widget buildProductGrid() {
           double originalPrice = currentPrice + discount;
 
           return ProductCard(
-            onTapCart: ()async{
+            onTapCart: () async {
               print("tap cart");
-           
-      await Provider.of<CartProvider>(context, listen: false).addToCart(
-        context: context,
-        productId: product.slNo,
-        name: product.name,
-        price: product.discountAmount.isNotEmpty ? double.parse(product.discountAmount.toString()) : double.parse(product.sellingPrice),
-        productQty: 1,
-        purchasePrice: double.parse(product.purchasePrice.toString()),
-        image: "sample.jpg",
-        quantity: 1,
-      );
-      
-   
-    
 
- 
+              await Provider.of<CartProvider>(context, listen: false).addToCart(
+                context: context,
+                productId: product.slNo,
+
+                productQty: 1,
+              );
             },
             tag: "Offer",
             imageUrl: product.productImage,
@@ -316,23 +307,12 @@ Widget buildTopSellingGrid() {
             oldPrice: discountAmt > 0
                 ? "৳${originalPrice.toStringAsFixed(2)}"
                 : "",
-                onTapCart: ()async{
-           
-      await Provider.of<CartProvider>(context, listen: false).addToCart(
-        context: context,
-        productId: product.slNo,
-        name: product.name,
-        price: product.discountAmount.isNotEmpty ? double.parse(product.discountAmount.toString()) : double.parse(product.sellingPrice),
-        productQty: 1,
-        purchasePrice: double.parse(product.purchasePrice.toString()),
-        image: "sample.jpg",
-        quantity: 1,
-      );
-      
-   
-    
-
- 
+            onTapCart: () async {
+              await Provider.of<CartProvider>(context, listen: false).addToCart(
+                context: context,
+                productId: product.slNo,
+                productQty: 1,
+              );
             },
           );
         },

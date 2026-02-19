@@ -122,12 +122,9 @@ class _AllProductPageState extends State<AllProductPage> {
       await Provider.of<CartProvider>(context, listen: false).addToCart(
         context: context,
         productId: product.slNo,
-        name: product.name,
-        price: product.discountAmount.isNotEmpty ? double.parse(product.discountAmount.toString()) : double.parse(product.sellingPrice),
+        
         productQty: 1,
-        purchasePrice: double.parse(product.purchasePrice.toString()),
-        image: "sample.jpg",
-        quantity: 1,
+        
       );
       
    

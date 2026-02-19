@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/model/cart_response_model.dart';
 import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
+import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
 import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
@@ -10,31 +12,19 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  final List<CartItem> cartItems = [
-    CartItem(
-      name: 'Toothpaste Dabur\nZenfresh 145gm',
-      price: 140.00,
-      quantity: 1,
-    ),
-    CartItem(
-      name: 'Chocolate Spread\nNutella 180gm',
-      price: 570.00,
-      quantity: 1,
-    ),
-  ];
-
   final String deliveryAddress = 'House-4, Block-D, Basundhara R/A';
   final String phoneNumber = '01712344561';
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<CartProvider>();
-    final total = cartItems.fold<double>(
-      0,
-      (sum, item) => sum + (item.price * item.quantity),
-    );
-    const deliveryCharge = 30.0;
-    final subTotal = total + deliveryCharge;
+
+    // final total = cartItems.fold<double>(
+    //   0,
+    //   (sum, item) => sum + (item.price * item.quantity),
+    // );
+    // const deliveryCharge = 30.0;
+    // final subTotal = total + deliveryCharge;
 
     return Scaffold(
       body: DecoratedBox(
@@ -52,201 +42,226 @@ class _CartPageState extends State<CartPage> {
           ),
         ),
         child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {},
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Shopping Cart',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  // Cart Items
-                  ...cartItems.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildCartItem(item, index),
-                    );
-                  }).toList(),
-
-                  const SizedBox(height: 16),
-
-                  // Price Summary Card
-                  Container(
+          child: controller.cartLoading
+              ? Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    await controller.getCartApi();
+                  },
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                     child: Column(
-                      children: [
-                        _buildPriceRow('Total :', total.toStringAsFixed(0)),
-                        const SizedBox(height: 8),
-                        _buildPriceRow(
-                          'Delivery Charge :',
-                          deliveryCharge.toStringAsFixed(0),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Purchase at least 2000 taka more for free delivery',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildPriceRow(
-                          'Sub Total :',
-                          subTotal.toStringAsFixed(0),
-                          isTotal: true,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Clear Cart Button
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        cartItems.clear();
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Cart cleared'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.close, size: 18),
-                    label: const Text('Clear Cart'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF1565C0),
-                      side: const BorderSide(color: Color(0xFF1565C0)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Delivery Address Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
-                          'Confirm Delivery Address',
+                          'Shopping Cart',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1565C0),
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          deliveryAddress,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black87,
+                        // Cart Items
+                        ...controller.cartResponse.cart!.asMap().entries.map((
+                          entry,
+                        ) {
+                          final index = entry.key;
+                          final item = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildCartItem(item, index),
+                          );
+                        }).toList(),
+
+                        const SizedBox(height: 16),
+
+                        // Price Summary Card
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildPriceRow(
+                                'Total :',
+                                controller.cartResponse.total!.toStringAsFixed(
+                                  0,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _buildPriceRow(
+                                'Delivery Charge :',
+                                controller.cartResponse.deliveryCharge!
+                                    .toStringAsFixed(0),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Purchase at least 2000 taka more for free delivery',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildPriceRow(
+                                'Sub Total :',
+                                controller.cartResponse.subTotal!
+                                    .toStringAsFixed(0),
+                                isTotal: true,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Number : $phoneNumber',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton(
+
+                        const SizedBox(height: 16),
+
+                        // Clear Cart Button
+                        OutlinedButton.icon(
                           onPressed: () {
-                            _showChangeLocationDialog(context);
+                            setState(() {
+                              // cartItems.clear();
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Cart cleared'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                           },
+                          icon: const Icon(Icons.close, size: 18),
+                          label: const Text('Clear Cart'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF1565C0),
                             side: const BorderSide(color: Color(0xFF1565C0)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            minimumSize: const Size(double.infinity, 40),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: const Text('Change Location'),
                         ),
+
+                        const SizedBox(height: 16),
+
+                        // Delivery Address Card
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Confirm Delivery Address',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1565C0),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                deliveryAddress,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Number : $phoneNumber',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton(
+                                onPressed: () {
+                                  _showChangeLocationDialog(context);
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF1565C0),
+                                  side: const BorderSide(
+                                    color: Color(0xFF1565C0),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  minimumSize: const Size(double.infinity, 40),
+                                ),
+                                child: const Text('Change Location'),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Place Order Button
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (controller.cartResponse.cart!.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Cart is empty'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                            final response = await controller.placeOrder(
+                              address: controller.profile!.customerAddress!,
+                              phone: controller.profile!.customerMobile!,
+                              name: controller.profile!.customerName!,
+                              paymentType: 1, // 1 for Cash
+                              areaId: int.parse(
+                                controller.profile!.areaId!.toString(),
+                              ),
+                            );
+
+                           
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(response),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1565C0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Place Order',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 16),
-
-                  // Place Order Button
-                  ElevatedButton(
-                    onPressed: () {
-                      if (cartItems.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Cart is empty'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Order placed successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Place Order',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ),
+                ),
         ),
       ),
     );
   }
 
-  Widget _buildCartItem(CartItem item, int index) {
+  Widget _buildCartItem(Cart item, int index) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -263,10 +278,10 @@ class _CartPageState extends State<CartPage> {
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.shopping_bag_outlined,
-              color: Colors.grey.shade400,
-              size: 30,
+            child: Image.network(
+              item.image!,
+              errorBuilder: (context, error, stackTrace) =>
+                  Image.asset("assets/image/no_image_found.png"),
             ),
           ),
 
@@ -278,7 +293,7 @@ class _CartPageState extends State<CartPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.name,
+                  item.name!,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -287,7 +302,7 @@ class _CartPageState extends State<CartPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '৳${item.price.toStringAsFixed(2)}',
+                  '৳${item.price!.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -310,8 +325,8 @@ class _CartPageState extends State<CartPage> {
                   icon: const Icon(Icons.remove, size: 16),
                   onPressed: () {
                     setState(() {
-                      if (item.quantity > 1) {
-                        item.quantity--;
+                      if (item.quantity! > 1) {
+                        // item.quantity--;
                       }
                     });
                   },
@@ -332,7 +347,7 @@ class _CartPageState extends State<CartPage> {
                   icon: const Icon(Icons.add, size: 16),
                   onPressed: () {
                     setState(() {
-                      item.quantity++;
+                      // item.quantity++;
                     });
                   },
                   padding: const EdgeInsets.all(4),
@@ -348,7 +363,7 @@ class _CartPageState extends State<CartPage> {
           InkWell(
             onTap: () {
               setState(() {
-                cartItems.removeAt(index);
+                // cartItems.removeAt(index);
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

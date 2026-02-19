@@ -7,6 +7,7 @@ class ProfileModel {
   final String? customerAddress;
   final String? customerImage;
   final String? points;
+  final int? areaId;
 
   ProfileModel({
     this.customerSlNo,
@@ -17,6 +18,7 @@ class ProfileModel {
     this.customerAddress,
     this.customerImage,
     this.points,
+    this.areaId,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class ProfileModel {
       customerName: json['Customer_Name'],
       customerMobile: json['Customer_Mobile'],
       customerEmail: json['Customer_Email'],
+      areaId: json["area_ID"],
       customerAddress: json['Customer_Address'],
       customerImage: json['customer_image'],
       points: json['point'].toString(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:jj_mart/presentation/auth/login_page.dart';
 import 'package:jj_mart/presentation/contact/about_screen.dart';
 import 'package:jj_mart/presentation/contact/edit_profile.dart';
 import 'package:jj_mart/presentation/contact/terms_screen.dart';
@@ -370,7 +371,15 @@ class _ContactScreenState extends State<ContactScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const JMartSignInScreen(), // change to your login screen
+                ),
+                (route) => false, // removes all previous routes
+              );
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Logged out successfully'),

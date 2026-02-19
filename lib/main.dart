@@ -20,9 +20,11 @@ void main() {
             ..getOfferProducts()
             ..fetchTopSellingProducts(),
         ),
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(
+          create: (_) => ProfileProvider()..fetchProfile(),
+        ),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()..getCartApi()),
+        ChangeNotifierProvider(create: (_) => CartProvider()..fetchProfile()..getCartApi()),
       ],
       child: const MyApp(),
     ),

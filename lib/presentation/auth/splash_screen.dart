@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:jj_mart/presentation/auth/login_page.dart';
+import 'package:jj_mart/presentation/landing/landing_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ==================== SPLASH SCREEN ====================
 class SplashScreen extends StatefulWidget {
@@ -18,13 +20,35 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigateToLogin();
   }
 
-  void _navigateToLogin() {
-    Timer(const Duration(seconds: 3), () {
+  Future<void> _navigateToLogin() async {
+    // 1. Wait for the 3-second timer
+    await Future.delayed(const Duration(seconds: 3));
+
+    // 2. Access SharedPreferences
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // 3. Get the token (replace 'user_token' with your actual key name)
+    final String? token = prefs.getString('token');
+
+    // 4. Check if the widget is still in the tree (best practice)
+    if (!mounted) return;
+
+    // 5. Conditional Navigation
+    if (token != null && token.isNotEmpty) {
+      // Token exists -> Go to Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const LandingPage(),
+        ), // Replace with your Home Screen class
+      );
+    } else {
+      // No token -> Go to Sign In
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const JMartSignInScreen()),
       );
-    });
+    }
   }
 
   @override
@@ -73,4 +97,3 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-
