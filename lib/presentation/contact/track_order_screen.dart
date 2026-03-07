@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/model/profile_model.dart';
 import 'package:jj_mart/presentation/contact/order_details.dart';
+import 'package:flutter/material.dart';
+import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
+import 'package:provider/provider.dart';
+// Import your provider and model here
 
 class TrackOrderScreen extends StatefulWidget {
   const TrackOrderScreen({super.key});
@@ -11,98 +16,96 @@ class TrackOrderScreen extends StatefulWidget {
 class _TrackOrderScreenState extends State<TrackOrderScreen> {
   String selectedFilter = 'All Order';
 
-  final List<OrderItem> orders = [
-    OrderItem(
-      productName: 'Pineapple (1KG)',
-      price: '৳ 350.00',
-      orderId: 'ID #2315',
-      address: 'Address: House-4, Block-D, Basundhara R/A',
-      phone: 'Number: 01712345670',
-      status: 'Delivered',
-      statusColor: Colors.green,
-      backgroundColor: Colors.white,
-      date: '28 Sept, 10:35',
-    ),
-    OrderItem(
-      productName: 'Orange (1KG)',
-      price: '৳ 350.00',
-      orderId: 'ID #2315',
-      address: 'Address: House-4, Block-D, Basundhara R/A',
-      phone: 'Number: 01712345670',
-      status: 'Processing',
-      statusColor: Colors.blue,
-      backgroundColor: const Color(0xFF1565C0),
-      date: '',
-    ),
-    OrderItem(
-      productName: 'Pineapple (1KG)',
-      price: '৳ 350.00',
-      orderId: 'ID #2315',
-      address: 'Address: House-4, Block-D, Basundhara R/A',
-      phone: 'Number: 01712345670',
-      status: 'Delivered',
-      statusColor: Colors.green,
-      backgroundColor: Colors.white,
-      date: '28 Sept, 10:35',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Replace 'CartProvider' with your actual provider name
+      context.read<ProfileProvider>().fetchUserSales();
+    });
+  }
+
+  // Maps API status codes to UI labels and colors
+  Map<String, dynamic> getStatusUI(String status) {
+    switch (status) {
+      case 'p':
+        return {
+          'label': 'Pending',
+          'color': Colors.orange,
+          'filter': 'Pending',
+        };
+      case 'a':
+        return {
+          'label': 'Approved',
+          'color': Colors.blue,
+          'filter': 'Processing',
+        };
+      case 'c':
+        return {
+          'label': 'Cancelled',
+          'color': Colors.red,
+          'filter': 'Cancelled',
+        };
+      default:
+        return {
+          'label': 'Delivered',
+          'color': Colors.green,
+          'filter': 'Delivered',
+        };
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProfileProvider>(); // Use your provider name
+
+    // Filtering logic
+    final filteredOrders = provider.salesList.where((order) {
+      if (selectedFilter == 'All Order') return true;
+      return getStatusUI(order.status)['filter'] == selectedFilter;
+    }).toList();
+
     return Scaffold(
-      backgroundColor: Colors.lightBlue.shade100,
+      backgroundColor: Colors.lightBlue.shade50,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1565C0),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Order',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: const Text('My Orders', style: TextStyle(color: Colors.white)),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
-          // Filter Buttons
+          // Filter Tabs
           Container(
             color: const Color(0xFF1565C0),
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(
               children: [
                 _buildFilterButton('All Order'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 _buildFilterButton('Pending'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 _buildFilterButton('Processing'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 _buildFilterButton('Delivered'),
               ],
             ),
           ),
 
-          // Order List
+          // List Area
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: orders.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: InkWell(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (_)=>TrackOrderDetailsScreen ()));
+            child: provider.isLoadingSales
+                ? const Center(child: CircularProgressIndicator())
+                : filteredOrders.isEmpty
+                ? const Center(child: Text("No orders found"))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredOrders.length,
+                    itemBuilder: (context, index) {
+                      return _buildOrderCard(filteredOrders[index]);
                     },
-                    child: _buildOrderCard(orders[index])),
-                );
-              },
-            ),
+                  ),
           ),
         ],
       ),
@@ -110,26 +113,22 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
   }
 
   Widget _buildFilterButton(String title) {
-    final isSelected = selectedFilter == title;
+    bool isSelected = selectedFilter == title;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedFilter = title;
-          });
-        },
+        onTap: () => setState(() => selectedFilter = title),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.green : Colors.white,
+            color: isSelected ? Colors.green : Colors.white.withOpacity(0.9),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.black87,
             ),
           ),
@@ -138,111 +137,82 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
     );
   }
 
-  Widget _buildOrderCard(OrderItem order) {
-    final isWhiteCard = order.backgroundColor == Colors.white;
+  Widget _buildOrderCard(UserSale order) {
+    final statusData = getStatusUI(order.status);
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: order.backgroundColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Name and Price
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                order.productName,
-                style: TextStyle(
-                  fontSize: 16,
+                "Invoice: ${order.invoiceNo}",
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isWhiteCard ? Colors.black87 : Colors.white,
+                  fontSize: 15,
                 ),
               ),
-              if (order.date.isNotEmpty)
-                Text(
-                  order.date,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
+              Text(
+                order.saleDate,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
             ],
           ),
-
-          const SizedBox(height: 4),
-
+          const Divider(height: 20),
           Text(
-            order.price,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isWhiteCard ? Colors.black87 : Colors.white,
+            "Amount: ৳ ${order.total.toStringAsFixed(2)}",
+            style: const TextStyle(
+              color: Color(0xFF1565C0),
+              fontWeight: FontWeight.bold,
             ),
           ),
-
+          const SizedBox(height: 8),
+          _rowInfo(Icons.person, "Customer: ${order.shippingName}"),
+          _rowInfo(Icons.location_on, "Address: ${order.shippingAddress}"),
+          _rowInfo(Icons.phone, "Phone: ${order.shippingPhone}"),
           const SizedBox(height: 12),
-
-          // Order ID
-          Text(
-            'Order: ${order.orderId}',
-            style: TextStyle(
-              fontSize: 13,
-              color: isWhiteCard ? Colors.black87 : Colors.white,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: statusData['color'],
+              borderRadius: BorderRadius.circular(20),
             ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // Address
-          Text(
-            order.address,
-            style: TextStyle(
-              fontSize: 13,
-              color: isWhiteCard ? Colors.black87 : Colors.white,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // Phone Number
-          Text(
-            order.phone,
-            style: TextStyle(
-              fontSize: 13,
-              color: isWhiteCard ? Colors.black87 : Colors.white,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Status Button
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: order.statusColor,
-                borderRadius: BorderRadius.circular(20),
+            child: Text(
+              statusData['label'],
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
               ),
-              child: Text(
-                order.status,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _rowInfo(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: Colors.grey),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 13, color: Colors.black87),
             ),
           ),
         ],
@@ -251,28 +221,65 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
   }
 }
 
-class OrderItem {
-  final String productName;
-  final String price;
-  final String orderId;
-  final String address;
-  final String phone;
+class UserSale {
+  final int id;
+  final String invoiceNo;
+  final String saleDate;
+  final String? description;
+  final double subTotal;
+  final double discount;
+  final double total;
+  final double due;
   final String status;
-  final Color statusColor;
-  final Color backgroundColor;
-  final String date;
+  final String shippingName;
+  final String shippingPhone;
+  final String shippingAddress;
 
-  OrderItem({
-    required this.productName,
-    required this.price,
-    required this.orderId,
-    required this.address,
-    required this.phone,
+  UserSale({
+    required this.id,
+    required this.invoiceNo,
+    required this.saleDate,
+    this.description,
+    required this.subTotal,
+    required this.discount,
+    required this.total,
+    required this.due,
     required this.status,
-    required this.statusColor,
-    required this.backgroundColor,
-    required this.date,
+    required this.shippingName,
+    required this.shippingPhone,
+    required this.shippingAddress,
   });
+
+  factory UserSale.fromJson(Map<String, dynamic> json) {
+    return UserSale(
+      id: json['SaleMaster_SlNo'],
+      invoiceNo: json['SaleMaster_InvoiceNo'] ?? '',
+      saleDate: json['SaleMaster_SaleDate'] ?? '',
+      description: json['SaleMaster_Description'],
+      subTotal:
+          double.tryParse(
+            json['SaleMaster_SubTotalAmount']?.toString() ?? '0',
+          ) ??
+          0.0,
+      discount:
+          double.tryParse(
+            json['SaleMaster_TotalDiscountAmount']?.toString() ?? '0',
+          ) ??
+          0.0,
+      total:
+          double.tryParse(
+            json['SaleMaster_TotalSaleAmount']?.toString() ?? '0',
+          ) ??
+          0.0,
+      due:
+          double.tryParse(json['SaleMaster_DueAmount']?.toString() ?? '0') ??
+          0.0,
+      status:
+          json['Status'] ??
+          'p', // p = pending, a = approved, c = cancelled, etc.
+      shippingName: json['ShippingName'] ?? 'N/A',
+      shippingPhone: json['ShippingPhone'] ?? 'N/A',
+      shippingAddress: json['ShippingAddress'] ?? 'N/A',
+    );
+  }
 }
-
-

@@ -132,6 +132,64 @@ class CartProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updateCartApi() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
+    try {
+      // Replace with your actual URL
+      final response = await http.get(
+        Uri.parse('https://jmartbd.com/api/shopping_cart/load_cart'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        print(response.body);
+        cartResponse = CartResponse.fromJson(jsonDecode(response.body));
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error fetching cart: $e");
+    }
+  }
+
+  Future<String> removeFromCart(String rowId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://jmartbd.com/api/shopping_cart/remove'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({"row_id": rowId}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Better to check for a success flag or any message rather than exact string
+        if (data["message"] != null) {
+          // Refresh the cart data immediately
+          await updateCartApi();
+          return data["message"];
+        }
+
+        return "Product removed";
+      } else {
+        // Decode error message from server if available
+        final errorData = jsonDecode(response.body);
+        return errorData["message"] ?? "Failed to remove item";
+      }
+    } catch (e) {
+      debugPrint("Error removing item: $e");
+      return "Something went wrong";
+    }
+  }
+
   Future<String> placeOrder({
     required String address,
     required String phone,
@@ -173,6 +231,7 @@ class CartProvider with ChangeNotifier {
         print("Order Success: ${responseData['message']}");
 
         cartResponse = CartResponse();
+
         notifyListeners();
         return responseData['message'];
         // Navigate to a success screen or show a dialog

@@ -4,14 +4,28 @@ import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
 import 'package:provider/provider.dart';
 
-class CartPage extends StatefulWidget {
+class CartPage extends StatelessWidget {
   const CartPage({super.key});
 
   @override
-  State<CartPage> createState() => _CartPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => CartProvider()
+        ..getCartApi()
+        ..fetchProfile(),
+      child: Layout(),
+    );
+  }
 }
 
-class _CartPageState extends State<CartPage> {
+class Layout extends StatefulWidget {
+  const Layout({super.key});
+
+  @override
+  State<Layout> createState() => _LayoutState();
+}
+
+class _LayoutState extends State<Layout> {
   final String deliveryAddress = 'House-4, Block-D, Basundhara R/A';
   final String phoneNumber = '01712344561';
 
@@ -62,16 +76,54 @@ class _CartPageState extends State<CartPage> {
                           ),
                         ),
                         // Cart Items
-                        ...controller.cartResponse.cart!.asMap().entries.map((
-                          entry,
-                        ) {
-                          final index = entry.key;
-                          final item = entry.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildCartItem(item, index),
-                          );
-                        }).toList(),
+                        // Check if the cart is null or empty first
+                        controller.cartResponse.cart == null ||
+                                controller.cartResponse.cart!.isEmpty
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.shopping_cart_outlined,
+                                        size: 50,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      const Text(
+                                        "Your cart is empty",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Column(
+                                // If not empty, show the items
+                                children: [
+                                  ...controller.cartResponse.cart!
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                        final index = entry.key;
+                                        final item = entry.value;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 12,
+                                          ),
+                                          child: _buildCartItem(
+                                            item,
+                                            index,
+                                            controller,
+                                          ),
+                                        );
+                                      })
+                                      .toList(),
+                                ],
+                              ),
 
                         const SizedBox(height: 16),
 
@@ -86,15 +138,18 @@ class _CartPageState extends State<CartPage> {
                             children: [
                               _buildPriceRow(
                                 'Total :',
-                                controller.cartResponse.total!.toStringAsFixed(
-                                  0,
-                                ),
+                                controller.cartResponse.total == null
+                                    ? "0"
+                                    : controller.cartResponse.total!
+                                          .toStringAsFixed(0),
                               ),
                               const SizedBox(height: 8),
                               _buildPriceRow(
                                 'Delivery Charge :',
-                                controller.cartResponse.deliveryCharge!
-                                    .toStringAsFixed(0),
+                                controller.cartResponse.deliveryCharge == null
+                                    ? "0"
+                                    : controller.cartResponse.deliveryCharge!
+                                          .toStringAsFixed(0),
                               ),
                               const SizedBox(height: 8),
                               const Text(
@@ -109,8 +164,10 @@ class _CartPageState extends State<CartPage> {
                               const SizedBox(height: 8),
                               _buildPriceRow(
                                 'Sub Total :',
-                                controller.cartResponse.subTotal!
-                                    .toStringAsFixed(0),
+                                controller.cartResponse.subTotal == null
+                                    ? "0"
+                                    : controller.cartResponse.subTotal!
+                                          .toStringAsFixed(0),
                                 isTotal: true,
                               ),
                             ],
@@ -216,7 +273,8 @@ class _CartPageState extends State<CartPage> {
                               return;
                             }
                             final response = await controller.placeOrder(
-                              address: controller.profile!.customerAddress!,
+                              address:
+                                  controller.profile!.customerAddress ?? "N/A",
                               phone: controller.profile!.customerMobile!,
                               name: controller.profile!.customerName!,
                               paymentType: 1, // 1 for Cash
@@ -225,7 +283,6 @@ class _CartPageState extends State<CartPage> {
                               ),
                             );
 
-                           
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(response),
@@ -261,7 +318,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCartItem(Cart item, int index) {
+  Widget _buildCartItem(Cart item, int index, CartProvider provider) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -361,14 +418,13 @@ class _CartPageState extends State<CartPage> {
 
           // Delete Button
           InkWell(
-            onTap: () {
-              setState(() {
-                // cartItems.removeAt(index);
-              });
+            onTap: () async {
+              final response = await provider.removeFromCart(item.rowId!);
+
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Item removed from cart'),
-                  backgroundColor: Colors.red,
+                SnackBar(
+                  content: Text(response),
+                  backgroundColor: Colors.green,
                 ),
               );
             },

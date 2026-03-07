@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jj_mart/model/profile_model.dart';
+import 'package:jj_mart/presentation/contact/track_order_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileProvider with ChangeNotifier {
@@ -41,4 +42,40 @@ class ProfileProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  List<UserSale> _salesList = [];
+List<UserSale> get salesList => _salesList;
+bool _isLoadingSales = false;
+bool get isLoadingSales => _isLoadingSales;
+
+Future<void> fetchUserSales() async {
+  _isLoadingSales = true;
+  notifyListeners();
+
+  final prefs = await SharedPreferences.getInstance();
+  final String? token = prefs.getString("token");
+
+  try {
+    final response = await http.get(
+      Uri.parse('https://jmartbd.com/api/user-sales'), // Replace {{host}}
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      if (data['status'] == true) {
+        Iterable list = data['data'];
+        _salesList = list.map((model) => UserSale.fromJson(model)).toList();
+      }
+    }
+  } catch (e) {
+    debugPrint("Error fetching sales: $e");
+  } finally {
+    _isLoadingSales = false;
+    notifyListeners();
+  }
 }
+  }

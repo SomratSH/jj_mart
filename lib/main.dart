@@ -21,7 +21,7 @@ void main() {
             ..fetchTopSellingProducts(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ProfileProvider()..fetchProfile(),
+          create: (_) => ProfileProvider()..fetchProfile()..fetchUserSales(),
         ),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()..fetchProfile()..getCartApi()),

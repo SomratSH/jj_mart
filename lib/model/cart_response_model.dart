@@ -4,9 +4,9 @@ class CartResponse {
   final String? message;
   final List<Cart>? cart;
   final double? total;
-  final double? deliveryCharge;
+  final dynamic deliveryCharge;
   final double? subTotal;
-  final int? totalQuantity;
+  final dynamic totalQuantity;
 
   CartResponse({
     this.type,
@@ -29,10 +29,10 @@ class CartResponse {
           ? List<Cart>.from(json['cart'].map((x) => Cart.fromJson(x)))
           : null,
       // Using .toDouble() on a num is the safest way to handle int vs double errors
-      total: (json['total'] as num?)?.toDouble(),
-      deliveryCharge: (json['delivery_charge'] as num?)?.toDouble(),
-      subTotal: (json['sub_total'] as num?)?.toDouble(),
-      totalQuantity: json['quantity'] as int?,
+      total: double.tryParse(json['total']?.toString() ?? '0') ?? 0.0,
+      deliveryCharge: json['delivery_charge'],
+      subTotal:double.tryParse(json['sub_total']?.toString() ?? '0') ?? 0.0,
+      totalQuantity: json['quantity'],
     );
   }
 }
@@ -40,12 +40,12 @@ class CartResponse {
 class Cart {
   final int? id;
   final String? name;
-  final double? price;
-  final int? quantity;
+  final dynamic? price;
+  final dynamic quantity;
   final String? image;
-  final int? productQuantity;
+  final dynamic? productQuantity;
   final double? purchasePrice;
-  final double? discountAmount;
+  final dynamic? discountAmount;
   final String? rowId;
 
   Cart({
@@ -65,12 +65,12 @@ class Cart {
       id: json['id'] as int?,
       name: json['name'],
       // Handles cases like price: 9.2
-      price: (json['price'] as num?)?.toDouble(),
-      quantity: json['quantity'] as int?,
+      price: json['price'],
+      quantity: json['quantity'],
       image: json['image'],
-      productQuantity: json['product_quantity'] as int?,
-      purchasePrice: (json['purchase_price'] as num?)?.toDouble(),
-      discountAmount: (json['discountAmount'] as num?)?.toDouble(),
+      productQuantity: json['product_quantity'],
+      purchasePrice: json['purchase_price'],
+      discountAmount: json['discountAmount'],
       rowId: json['row_id'],
     );
   }
