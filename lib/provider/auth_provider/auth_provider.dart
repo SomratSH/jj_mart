@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jj_mart/model/areas_model.dart';
 import 'package:jj_mart/presentation/auth/login_page.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,7 @@ class AuthProvider extends ChangeNotifier {
       "user_password": password,
       "user_address": address,
       "area_id": areaId,
+      "customer_type": "wholesale",
     };
 
     try {
@@ -154,5 +156,47 @@ class AuthProvider extends ChangeNotifier {
 
     // Optional: Save points or credit limit if needed
     await prefs.setString("points", userData["point"].toString());
+  }
+
+  List<AreaModel> _areas = [];
+  List<AreaModel> get areas => _areas;
+
+  AreaModel? _selectedArea;
+  AreaModel? get selectedArea => _selectedArea;
+
+  bool _isLoadingAreas = false;
+  bool get isLoadingAreas => _isLoadingAreas;
+
+  Future<void> fetchAreas() async {
+    _isLoadingAreas = true;
+    notifyListeners();
+
+    try {
+      // Replace with your actual base URL
+      final response = await http.get(
+        Uri.parse('https://jmartbd.com/api/areas'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['status'] == true) {
+          final List<dynamic> data = responseData['data'];
+          _areas = data.map((item) => AreaModel.fromJson(item)).toList();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching areas: $e");
+    } finally {
+      _isLoadingAreas = false;
+      notifyListeners();
+    }
+  }
+
+  // Function to set the selected area and update delivery charges in UI
+  void setArea(AreaModel area) {
+    _selectedArea = area;
+    notifyListeners();
   }
 }

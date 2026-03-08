@@ -13,7 +13,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()..fetchAreas()),
         ChangeNotifierProvider(
           create: (_) => HomeProvider()
             ..getSliders()
@@ -21,10 +21,16 @@ void main() {
             ..fetchTopSellingProducts(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ProfileProvider()..fetchProfile()..fetchUserSales(),
+          create: (_) => ProfileProvider()
+            ..fetchProfile()
+            ..fetchUserSales(),
         ),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()..fetchProfile()..getCartApi()),
+        ChangeNotifierProvider(
+          create: (_) => CartProvider()
+            ..fetchProfile()
+            ..getCartApi(),
+        ),
       ],
       child: const MyApp(),
     ),

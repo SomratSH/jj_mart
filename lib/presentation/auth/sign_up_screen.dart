@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/model/areas_model.dart';
 import 'package:jj_mart/provider/auth_provider/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -17,16 +18,6 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   String? selectedArea;
-  final List<String> areas = [
-    'Dhaka',
-    'Chittagong',
-    'Sylhet',
-    'Rajshahi',
-    'Khulna',
-    'Barisal',
-    'Rangpur',
-    'Mymensingh',
-  ];
 
   @override
   void dispose() {
@@ -152,8 +143,9 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   borderRadius: BorderRadius.circular(8),
                   color: Colors.white,
                 ),
-                child: DropdownButtonFormField<String>(
-                  value: selectedArea,
+                child: DropdownButtonFormField<AreaModel>(
+                  // Point this to the controller's variable
+                  value: controller.selectedArea,
                   hint: Text(
                     'Select Area',
                     style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
@@ -169,11 +161,12 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                       vertical: 14,
                     ),
                   ),
-                  items: areas.map((String area) {
-                    return DropdownMenuItem<String>(
+                  // Ensure controller.areas is not empty to avoid errors
+                  items: controller.areas.map((AreaModel area) {
+                    return DropdownMenuItem<AreaModel>(
                       value: area,
                       child: Text(
-                        area,
+                        area.name,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
@@ -181,14 +174,16 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                       ),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedArea = newValue;
-                    });
+                  onChanged: (AreaModel? newValue) {
+                    if (newValue != null) {
+                      controller.setArea(newValue);
+                    }
                   },
+                  // Optional: Add validation
+                  validator: (value) =>
+                      value == null ? 'Please select a delivery area' : null,
                 ),
               ),
-
               const SizedBox(height: 16),
 
               // Address TextField
@@ -274,7 +269,7 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
 
                     if (name.isEmpty ||
                         mobile.isEmpty ||
-                        selectedArea == null ||
+                        controller.selectedArea == null ||
                         address.isEmpty ||
                         password.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -293,7 +288,7 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                       mobile: mobile,
                       password: password,
                       address: address,
-                      areaId: "1",
+                      areaId: controller.selectedArea!.id.toString(),
                       context: context,
                     );
                   },
