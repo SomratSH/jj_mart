@@ -169,6 +169,7 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
+                    print("login");
                     // Handle sign in
                     final mobile = mobileController.text;
                     final password = passwordController.text;

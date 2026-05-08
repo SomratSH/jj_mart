@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:jj_mart/presentation/catagory/category_wise_product.dart';
 import 'package:jj_mart/provider/category_provider/category_provider.dart';
 import 'package:provider/provider.dart';
-// import 'category_provider.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -15,7 +15,6 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   void initState() {
     super.initState();
-    // Fetch data when page loads
     Future.delayed(Duration.zero, () {
       context.read<CategoryProvider>().fetchCategories();
     });
@@ -31,15 +30,9 @@ class _CategoryPageState extends State<CategoryPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1E60AA),
-              Color(0xFF2E77BD),
-              Color(0xFFB0C4DE),
-              Color(0xFFE0E5EC),
-            ],
-            stops: [0.0, 0.3, 0.7, 1.0],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1E60AA), Color(0xFF64B5F6)],
           ),
         ),
         child: SafeArea(
@@ -47,40 +40,49 @@ class _CategoryPageState extends State<CategoryPage> {
             children: [
               // --- Header ---
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
+                padding: EdgeInsets.only(top: 20, bottom: 10),
                 child: Text(
-                  "All Category",
+                  "Explore Categories",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ),
 
               // --- Search Bar ---
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 10,
+                ),
                 child: Container(
-                  height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
                   child: const TextField(
+                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: "Search any Product..",
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      hintText: "Search categories...",
+                      hintStyle: TextStyle(color: Colors.white70),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: Colors.white,
+                      ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                      contentPadding: EdgeInsets.symmetric(vertical: 15),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 10),
 
-              // --- Category List (Dynamic) ---
+              // --- Grid View (Dynamic) ---
               Expanded(
                 child: categoryProvider.isLoading
                     ? const Center(
@@ -93,12 +95,19 @@ class _CategoryPageState extends State<CategoryPage> {
                           style: TextStyle(color: Colors.white),
                         ),
                       )
-                    : ListView.builder(
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(20),
                         itemCount: categoryProvider.categories.length,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3, // 2 items per row
+                              crossAxisSpacing: 15,
+                              mainAxisSpacing: 15,
+                              childAspectRatio: 0.90, // Adjust for card height
+                            ),
                         itemBuilder: (context, index) {
                           final category = categoryProvider.categories[index];
-                          return _buildCategoryItem(category);
+                          return _buildGridCategoryItem(category);
                         },
                       ),
               ),
@@ -109,80 +118,92 @@ class _CategoryPageState extends State<CategoryPage> {
     );
   }
 
-  Widget _buildCategoryItem(category) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Container(
-        height: 65,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: InkWell(
-          onTap: () {
-            // Navigate to Product list by category.id
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CategoryWiseProduct(
-                  categoryId: category.id!,
-                  categoryName: category.name!,
-                ),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                // Category Image or Default Icon
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: category.image != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            category.image,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.shopping_bag_outlined,
-                          color: Color(0xFF1E60AA),
-                        ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  category.name ?? "Unknown",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey,
-                  size: 14,
-                ),
-              ],
-            ),
+  Widget _buildGridCategoryItem(category) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CategoryWiseProduct(
+                categoryId: category.id!,
+                categoryName: category.name!,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Fancy Icon Container
+            Container(
+              padding: const EdgeInsets.all(15),
+             
+              child: category.image != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        category.image,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.category_rounded,
+                              size: 40,
+                              color: Color(0xFF1E60AA),
+                            ),
+                      ),
+                    )
+                  : SvgPicture.asset(
+                    height: 40,
+                    width: 40,
+                      category.name == "Food"
+                          ? "assets/icon/food.svg"
+                          : category.name == "Baby Care"
+                          ? "assets/icon/baby-products.svg"
+                          : category.name == "Personal Care"
+                          ? "assets/icon/personal care.svg"
+                          : category.name == "Home Care"  
+                          ? "assets/icon/home.svg"
+                          : category.name == "Health & Wellness"
+                          ? "assets/icon/health.svg"
+                          : category.name == "Stationary"
+                          ? "assets/icon/stationary.svg"
+                          : category.name == "Sports" 
+                          ? "assets/icon/sport.svg" 
+                          : category.name == "Fruits & Vegetables" 
+                          ? "assets/icon/food.svg" 
+                          : category.name =="Pet Care" 
+                          ? "assets/icon/pet.svg" 
+                          : ""
+                          ,
+                    ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              category.name ?? "Unknown",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C3E50),
+              ),
+            ),
+            
+          ],
         ),
       ),
     );

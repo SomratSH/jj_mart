@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:jj_mart/presentation/all_product/all_product_page.dart';
 import 'package:jj_mart/presentation/catagory/catagory_page.dart';
 import 'package:jj_mart/presentation/favourite/favourite_page.dart';
@@ -29,36 +30,58 @@ class _LandingPageState extends State<LandingPage> {
       // Custom AppBar area
       body: page[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Color(0xFF1E60AA),
-        unselectedItemColor: Colors.black,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: "Category",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: "All Products",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: "Favorite",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: "Cart",
-          ),
-        ],
-      ),
+  backgroundColor: Colors.white,
+  currentIndex: _selectedIndex,
+  onTap: (index) => setState(() => _selectedIndex = index),
+  type: BottomNavigationBarType.fixed,
+  selectedItemColor: const Color(0xFF1E60AA),
+  unselectedItemColor: Colors.black,
+  showUnselectedLabels: true,
+  items: [
+    BottomNavigationBarItem(
+      icon: _buildSvgIcon("assets/icon/home-button.svg", 0),
+      label: "Home",
+    ),
+    BottomNavigationBarItem(
+      icon: _buildSvgIcon("assets/icon/category.svg", 1),
+      label: "Category",
+    ),
+    BottomNavigationBarItem(
+      icon: _buildSvgIcon("assets/icon/boxes.svg", 2),
+      label: "All Products",
+    ),
+    BottomNavigationBarItem(
+      icon: _buildSvgIcon("assets/icon/favorite.svg", 3),
+      label: "Favorite",
+    ),
+    BottomNavigationBarItem(
+      icon: _buildSvgIcon("assets/icon/cart.svg", 4),
+      label: "Cart",
+    ),
+  ],
+),
     );
   }
+Widget _buildSvgIcon(String assetPath, int index) {
+  final bool isActive = _selectedIndex == index;
 
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: SvgPicture.asset(
+      assetPath,
+      height: 24,
+      width: 24,
+      // If active, null means "show original colors"
+      // If inactive, apply the specific Color(0xFF1E60AA)
+      colorFilter: isActive 
+          ? null 
+          : const ColorFilter.mode(
+              Color(0xFF1E60AA), 
+              BlendMode.srcIn,
+            ),
+    ),
+  );
+}
   // --- Widgets ---
 }
 

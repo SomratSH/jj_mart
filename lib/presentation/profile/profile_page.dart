@@ -41,7 +41,8 @@ class _LayoutState extends State<Layout> {
     // final subTotal = total + deliveryCharge;
 
     return Scaffold(
-      body: DecoratedBox(
+      body: Container(
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,

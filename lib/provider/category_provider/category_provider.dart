@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jj_mart/model/category_model.dart';
@@ -29,6 +30,9 @@ class CategoryProvider with ChangeNotifier {
           'Authorization': 'Bearer $token',
         },);
       if (response.statusCode == 200) {
+        if(kDebugMode){
+          debugPrint(response.body);
+        }
         final Map<String, dynamic> decodedData = json.decode(response.body);
         final List<dynamic> data = decodedData['data'];
 
