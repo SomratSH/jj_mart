@@ -15,8 +15,8 @@ class CategoryProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> fetchCategories() async {
-      final prefs = await SharedPreferences.getInstance();
-      final String? token = prefs.getString("token");
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
     _isLoading = true;
     notifyListeners();
 
@@ -25,12 +25,15 @@ class CategoryProvider with ChangeNotifier {
     ); // Replace with your URL
 
     try {
-      final response = await http.get(url, headers:    {
+      final response = await http.get(
+        url,
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-        },);
+        },
+      );
       if (response.statusCode == 200) {
-        if(kDebugMode){
+        if (kDebugMode) {
           debugPrint(response.body);
         }
         final Map<String, dynamic> decodedData = json.decode(response.body);
@@ -60,6 +63,8 @@ class CategoryProvider with ChangeNotifier {
       _categoryProducts = [];
       _currentPage = 1;
     }
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
 
     _isLoading = true;
     notifyListeners();
@@ -68,8 +73,16 @@ class CategoryProvider with ChangeNotifier {
       final url = Uri.parse(
         'https://jmartbd.com/api/filter_products?category=$categoryId&page=$_currentPage',
       );
-      final response = await http.get(url);
-
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (kDebugMode) {
+        debugPrint(response.statusCode.toString());
+      }
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List productsJson = data['data'];

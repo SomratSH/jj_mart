@@ -149,8 +149,8 @@ class _CategoryPageState extends State<CategoryPage> {
           children: [
             // Fancy Icon Container
             Container(
-              padding: const EdgeInsets.all(15),
-             
+              padding: const EdgeInsets.all(5),
+
               child: category.image != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(10),
@@ -168,28 +168,27 @@ class _CategoryPageState extends State<CategoryPage> {
                       ),
                     )
                   : SvgPicture.asset(
-                    height: 40,
-                    width: 40,
+                      height: 40,
+                      width: 40,
                       category.name == "Food"
                           ? "assets/icon/food.svg"
                           : category.name == "Baby Care"
                           ? "assets/icon/baby-products.svg"
                           : category.name == "Personal Care"
                           ? "assets/icon/personal care.svg"
-                          : category.name == "Home Care"  
+                          : category.name == "Home Care"
                           ? "assets/icon/home.svg"
                           : category.name == "Health & Wellness"
                           ? "assets/icon/health.svg"
                           : category.name == "Stationary"
                           ? "assets/icon/stationary.svg"
-                          : category.name == "Sports" 
-                          ? "assets/icon/sport.svg" 
-                          : category.name == "Fruits & Vegetables" 
-                          ? "assets/icon/food.svg" 
-                          : category.name =="Pet Care" 
-                          ? "assets/icon/pet.svg" 
-                          : ""
-                          ,
+                          : category.name == "Sports"
+                          ? "assets/icon/sport.svg"
+                          : category.name == "Fruits & Vegetables"
+                          ? "assets/icon/food.svg"
+                          : category.name == "Pet Care"
+                          ? "assets/icon/pet.svg"
+                          : "",
                     ),
             ),
             const SizedBox(height: 5),
@@ -202,7 +201,6 @@ class _CategoryPageState extends State<CategoryPage> {
                 color: Color(0xFF2C3E50),
               ),
             ),
-            
           ],
         ),
       ),

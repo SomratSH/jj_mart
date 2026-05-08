@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jj_mart/model/category_wise_product.dart';
+import 'package:jj_mart/presentation/landing/landing_page.dart';
+import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:jj_mart/provider/category_provider/category_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -112,7 +114,34 @@ class _CategoryWiseProductState extends State<CategoryWiseProduct> {
                         itemCount: provider.categoryProducts.length,
                         itemBuilder: (context, index) {
                           final product = provider.categoryProducts[index];
-                          return _buildProductCard(product);
+                          double currentPrice =
+                              double.tryParse(product.sellingPrice!) ?? 0;
+                          double discount =
+                              double.tryParse(product.discountAmount!) ?? 0;
+                          double originalPrice = currentPrice + discount;
+                          return ProductCard(
+                            onTapCart: () async {
+                              print("tap cart");
+
+                              await Provider.of<CartProvider>(
+                                context,
+                                listen: false,
+                              ).addToCart(
+                                context: context,
+                                productId: product.id!,
+
+                                productQty: 1,
+                              );
+                            },
+                            tag: "Offer",
+                            imageUrl: product.productImage!,
+                            title: product.name!,
+                            price: "৳${product.sellingPrice}",
+                            oldPrice: "৳$originalPrice",
+                            // Pass the model if you need to go to a details page
+                            // product: product,
+                          );
+                          ;
                         },
                       ),
               ),
@@ -129,56 +158,56 @@ class _CategoryWiseProductState extends State<CategoryWiseProduct> {
     );
   }
 
-  Widget _buildProductCard(CategoryWiseProductModel product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(15),
-              ),
-              child: Image.network(
-                product.productImage ?? '',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.image_not_supported),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name ?? '',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "৳${product.sellingPrice}",
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildProductCard(CategoryWiseProductModel product) {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(15),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Expanded(
+  //           child: ClipRRect(
+  //             borderRadius: const BorderRadius.vertical(
+  //               top: Radius.circular(15),
+  //             ),
+  //             child: Image.network(
+  //               product.productImage ?? '',
+  //               fit: BoxFit.cover,
+  //               width: double.infinity,
+  //               errorBuilder: (context, error, stackTrace) =>
+  //                   const Icon(Icons.image_not_supported),
+  //             ),
+  //           ),
+  //         ),
+  //         Padding(
+  //           padding: const EdgeInsets.all(8.0),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 product.name ?? '',
+  //                 maxLines: 2,
+  //                 overflow: TextOverflow.ellipsis,
+  //                 style: const TextStyle(
+  //                   fontWeight: FontWeight.bold,
+  //                   fontSize: 14,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 4),
+  //               Text(
+  //                 "৳${product.sellingPrice}",
+  //                 style: const TextStyle(
+  //                   color: Colors.blue,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
