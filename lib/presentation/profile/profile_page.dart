@@ -26,12 +26,13 @@ class Layout extends StatefulWidget {
 }
 
 class _LayoutState extends State<Layout> {
-  final String deliveryAddress = 'House-4, Block-D, Basundhara R/A';
-  final String phoneNumber = '01712344561';
+  // final String deliveryAddress = 'House-4, Block-D, Basundhara R/A';
+  // final String phoneNumber = '01712344561';
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<CartProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
 
     // final total = cartItems.fold<double>(
     //   0,
@@ -224,7 +225,7 @@ class _LayoutState extends State<Layout> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                deliveryAddress,
+                                profileProvider.profile!.customerAddress ?? "N/A",
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.black87,
@@ -232,29 +233,29 @@ class _LayoutState extends State<Layout> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Number : $phoneNumber',
+                                'Number : ${profileProvider.profile!.customerMobile ?? "N/A"}',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.black87,
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              OutlinedButton(
-                                onPressed: () {
-                                  _showChangeLocationDialog(context);
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFF1565C0),
-                                  side: const BorderSide(
-                                    color: Color(0xFF1565C0),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  minimumSize: const Size(double.infinity, 40),
-                                ),
-                                child: const Text('Change Location'),
-                              ),
+                              // const SizedBox(height: 12),
+                              // OutlinedButton(
+                              //   onPressed: () {
+                              //     _showChangeLocationDialog(context);
+                              //   },
+                              //   style: OutlinedButton.styleFrom(
+                              //     foregroundColor: const Color(0xFF1565C0),
+                              //     side: const BorderSide(
+                              //       color: Color(0xFF1565C0),
+                              //     ),
+                              //     shape: RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.circular(8),
+                              //     ),
+                              //     minimumSize: const Size(double.infinity, 40),
+                              //   ),
+                              //   child: const Text('Change Location'),
+                              // ),
                             ],
                           ),
                         ),

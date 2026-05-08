@@ -3,6 +3,7 @@ import 'package:jj_mart/presentation/contact/contact_screen.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
 import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:jj_mart/provider/home_provider/home_provider.dart';
+import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -12,6 +13,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<HomeProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -29,7 +31,7 @@ class HomePage extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            _buildCustomAppBar(context),
+            _buildCustomAppBar(context, profileProvider.profile!.customerImage!),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -69,7 +71,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-Widget _buildCustomAppBar(BuildContext context) {
+Widget _buildCustomAppBar(BuildContext context, String profilePicture) {
   return Container(
     color: const Color(0xFF1565C0), // Dark Blue Header
     padding: const EdgeInsets.all(16.0),
@@ -79,7 +81,7 @@ Widget _buildCustomAppBar(BuildContext context) {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Placeholder for Logo
-            Image.asset("assets/logo/logo.png", height: 30, width: 30),
+             Image.asset("assets/logo/logo.png", height: 30, width: 30) ,
             // User Avatar
             InkWell(
               onTap: () => Navigator.push(
@@ -87,9 +89,9 @@ Widget _buildCustomAppBar(BuildContext context) {
                 MaterialPageRoute(builder: (_) => ContactScreen()),
               ),
               child: CircleAvatar(
-                backgroundColor: Colors.grey[800],
+                backgroundImage:   profilePicture.isNotEmpty ?  NetworkImage(profilePicture,) : NetworkImage("https://supershop.jmartbd.com//uploads//noImage.png"),
                 radius: 18,
-                child: const Icon(Icons.person, color: Colors.white, size: 20),
+                
               ),
             ),
           ],

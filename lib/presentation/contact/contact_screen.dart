@@ -350,8 +350,10 @@ class _ContactScreenState extends State<ContactScreen> {
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
+      
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Log Out',

@@ -44,7 +44,7 @@ class Cart {
   final dynamic quantity;
   final String? image;
   final dynamic? productQuantity;
-  final double? purchasePrice;
+  final dynamic? purchasePrice;
   final dynamic? discountAmount;
   final String? rowId;
 
