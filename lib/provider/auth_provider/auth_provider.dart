@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jj_mart/model/areas_model.dart';
 import 'package:jj_mart/presentation/auth/login_page.dart';
+import 'package:jj_mart/presentation/auth/otp_verification_page.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -198,5 +199,76 @@ class AuthProvider extends ChangeNotifier {
   void setArea(AreaModel area) {
     _selectedArea = area;
     notifyListeners();
+  }
+
+  Future<void> sendForgotPasswordOTP({
+    required String mobile,
+    required BuildContext context,
+  }) async {
+    _setLoading(true);
+
+    // Replace with your actual host and token
+    final String url = "https://jmartbd.com/api/forget";
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer ${preferences.getString("token")}',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          "phone": mobile,
+        }),
+      );
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['status'] == true) {
+        // --- SUCCESS CASE ---
+
+        if(context.mounted){
+                  _showSnackBar(context, responseData['message'], Colors.green);
+                    Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OTPVerificationScreen(mobile: mobile),
+          ),
+        );
+        }
+
+        
+      
+      } else {
+        if(context.mounted){
+            // --- FAILURE CASE (e.g., 400 Customer not found) ---
+        String errorMsg = responseData['message'] ?? "An error occurred";
+        _showSnackBar(context, errorMsg, Colors.redAccent);
+        }
+      
+      }
+    } catch (e) {
+      if(context.mounted){
+          _showSnackBar(context, "Connection failed. Please try again.", Colors.redAccent);
+      }
+     
+    
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 }

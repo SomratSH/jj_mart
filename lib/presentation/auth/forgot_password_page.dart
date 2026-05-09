@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jj_mart/presentation/auth/otp_verification_page.dart';
+import 'package:jj_mart/provider/auth_provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -20,7 +22,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -72,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         color: Colors.black.withOpacity(0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
-                      )
+                      ),
                     ],
                   ),
                   child: Column(
@@ -124,14 +129,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w500),
                           decoration: InputDecoration(
                             hintText: '01XXXXXXXXX',
-                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14,
+                            ),
                             prefixIcon: const Icon(
                               Icons.phone_android_rounded,
                               color: Color(0xFF1E60AA),
                               size: 22,
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 18,
+                              horizontal: 16,
+                            ),
                           ),
                         ),
                       ),
@@ -142,21 +153,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       SizedBox(
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (mobileController.text.isEmpty) {
-                              _showError(context, 'Please enter mobile number');
-                              return;
-                            }
+                          // Disable button while loading to prevent multiple API calls
+                          onPressed: context.watch<AuthProvider>().isLoading
+                              ? null
+                              : () {
+                                  final mobile = mobileController.text.trim();
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => OTPVerificationScreen(
-                                  mobile: mobileController.text,
-                                ),
-                              ),
-                            );
-                          },
+                                  if (mobile.isEmpty) {
+                                    _showError(
+                                      context,
+                                      'Please enter mobile number',
+                                    );
+                                  } else {
+                                    // --- CALL FORGOT PASSWORD API ---
+                                    context
+                                        .read<AuthProvider>()
+                                        .sendForgotPasswordOTP(
+                                          mobile: mobile,
+                                          context: context,
+                                        );
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1E60AA),
                             foregroundColor: Colors.white,
@@ -164,23 +181,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
+                            // Style for disabled state
+                            disabledBackgroundColor: Colors.grey.shade400,
                           ),
-                          child: const Text(
-                            'SEND OTP',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.1,
-                            ),
-                          ),
+                          child: context.watch<AuthProvider>().isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'SEND OTP',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // --- Simple Footer Help ---
                 Text(
                   "Remembered your password?",

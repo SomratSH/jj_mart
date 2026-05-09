@@ -123,24 +123,24 @@ class _JMartSignInScreenState extends State<JMartSignInScreen> {
                       ),
 
                       // // Forgot Password
-                      // Align(
-                      //   alignment: Alignment.centerRight,
-                      //   child: TextButton(
-                      //     onPressed: () {
-                      //       Navigator.push(
-                      //         context,
-                      //         MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                      //       );
-                      //     },
-                      //     child: const Text(
-                      //       "Forgot Password?",
-                      //       style: TextStyle(
-                      //         color: Color(0xFF1E60AA),
-                      //         fontWeight: FontWeight.w600,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                            );
+                          },
+                          child: const Text(
+                            "Forgot Password?",
+                            style: TextStyle(
+                              color: Color(0xFF1E60AA),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 10),
 
                       // Sign In Button
