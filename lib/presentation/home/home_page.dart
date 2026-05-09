@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jj_mart/presentation/contact/contact_screen.dart';
+import 'package:jj_mart/presentation/home/search_screen.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
 import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:jj_mart/provider/home_provider/home_provider.dart';
@@ -31,7 +32,12 @@ class HomePage extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            _buildCustomAppBar(context, profileProvider.profile!.customerImage!),
+            _buildCustomAppBar(
+              context,
+              profileProvider.profile == null
+                  ? ""
+                  : profileProvider.profile!.customerImage!,
+            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -81,7 +87,7 @@ Widget _buildCustomAppBar(BuildContext context, String profilePicture) {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Placeholder for Logo
-             Image.asset("assets/logo/logo.png", height: 30, width: 30) ,
+            Image.asset("assets/logo/logo.png", height: 30, width: 30),
             // User Avatar
             InkWell(
               onTap: () => Navigator.push(
@@ -89,19 +95,29 @@ Widget _buildCustomAppBar(BuildContext context, String profilePicture) {
                 MaterialPageRoute(builder: (_) => ContactScreen()),
               ),
               child: CircleAvatar(
-                backgroundImage:   profilePicture.isNotEmpty ?  NetworkImage(profilePicture,) : NetworkImage("https://supershop.jmartbd.com//uploads//noImage.png"),
+                backgroundImage: profilePicture.isNotEmpty
+                    ? NetworkImage(profilePicture)
+                    : NetworkImage(
+                        "https://supershop.jmartbd.com//uploads//noImage.png",
+                      ),
                 radius: 18,
-                
               ),
             ),
           ],
         ),
         const SizedBox(height: 15),
         // Search Bar
+        // Inside _buildCustomAppBar in HomePage.dart
         TextField(
+          readOnly: true, // Prevents keyboard from opening on HomePage
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
+            );
+          },
           decoration: InputDecoration(
             hintText: "Search any Product...",
-            hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
             filled: true,
             fillColor: Colors.white,

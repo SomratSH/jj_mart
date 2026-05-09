@@ -76,7 +76,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.remove("token");
     await prefs.clear();
+    notifyListeners();
 
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => JMartSignInScreen()),
@@ -219,9 +221,7 @@ class AuthProvider extends ChangeNotifier {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({
-          "phone": mobile,
-        }),
+        body: jsonEncode({"phone": mobile}),
       );
 
       final Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -229,32 +229,30 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200 && responseData['status'] == true) {
         // --- SUCCESS CASE ---
 
-        if(context.mounted){
-                  _showSnackBar(context, responseData['message'], Colors.green);
-                    Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => OTPVerificationScreen(mobile: mobile),
-          ),
-        );
+        if (context.mounted) {
+          _showSnackBar(context, responseData['message'], Colors.green);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OTPVerificationScreen(mobile: mobile),
+            ),
+          );
         }
-
-        
-      
       } else {
-        if(context.mounted){
-            // --- FAILURE CASE (e.g., 400 Customer not found) ---
-        String errorMsg = responseData['message'] ?? "An error occurred";
-        _showSnackBar(context, errorMsg, Colors.redAccent);
+        if (context.mounted) {
+          // --- FAILURE CASE (e.g., 400 Customer not found) ---
+          String errorMsg = responseData['message'] ?? "An error occurred";
+          _showSnackBar(context, errorMsg, Colors.redAccent);
         }
-      
       }
     } catch (e) {
-      if(context.mounted){
-          _showSnackBar(context, "Connection failed. Please try again.", Colors.redAccent);
+      if (context.mounted) {
+        _showSnackBar(
+          context,
+          "Connection failed. Please try again.",
+          Colors.redAccent,
+        );
       }
-     
-    
     } finally {
       _setLoading(false);
     }
@@ -268,6 +266,61 @@ class AuthProvider extends ChangeNotifier {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Future<void> verifyOtpAndUpdatePassword({
+    required String mobile,
+    required String otp,
+    required String password,
+    required BuildContext context,
+  }) async {
+    _setLoading(true);
+    final String url = "https://jmartbd.com/api/verify-update";
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer ${preferences.getString("token")}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({"phone": mobile, "otp": otp, "password": password}),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        _showSnackBar(context, "Password updated successfully!", Colors.green);
+        // Navigate to success or login screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const JMartSignInScreen()),
+          (route) => false,
+        );
+      } else {
+        _showSnackBar(
+          context,
+          data['message'] ?? "Verification failed",
+          Colors.redAccent,
+        );
+      }
+    } catch (e) {
+      _showSnackBar(context, "Connection error", Colors.redAccent);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _showTopSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(20),
       ),
     );
   }

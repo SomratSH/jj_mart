@@ -5,6 +5,8 @@ import 'package:jj_mart/presentation/catagory/catagory_page.dart';
 import 'package:jj_mart/presentation/favourite/favourite_page.dart';
 import 'package:jj_mart/presentation/home/home_page.dart';
 import 'package:jj_mart/presentation/profile/profile_page.dart';
+import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -25,63 +27,74 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cartController = context.watch<CartProvider>();
     return Scaffold(
       backgroundColor: Colors.white, // Light grey-blue bg
       // Custom AppBar area
       body: page[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-  backgroundColor: Colors.white,
-  currentIndex: _selectedIndex,
-  onTap: (index) => setState(() => _selectedIndex = index),
-  type: BottomNavigationBarType.fixed,
-  selectedItemColor: const Color(0xFF1E60AA),
-  unselectedItemColor: Colors.black,
-  showUnselectedLabels: true,
-  items: [
-    BottomNavigationBarItem(
-      icon: _buildSvgIcon("assets/icon/home-button.svg", 0),
-      label: "Home",
-    ),
-    BottomNavigationBarItem(
-      icon: _buildSvgIcon("assets/icon/category.svg", 1),
-      label: "Category",
-    ),
-    BottomNavigationBarItem(
-      icon: _buildSvgIcon("assets/icon/boxes.svg", 2),
-      label: "All Products",
-    ),
-    BottomNavigationBarItem(
-      icon: _buildSvgIcon("assets/icon/favorite.svg", 3),
-      label: "Favorite",
-    ),
-    BottomNavigationBarItem(
-      icon: _buildSvgIcon("assets/icon/cart.svg", 4),
-      label: "Cart",
-    ),
-  ],
-),
+        backgroundColor: Colors.white,
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFF1E60AA),
+        unselectedItemColor: Colors.black,
+        showUnselectedLabels: true,
+        items: [
+          BottomNavigationBarItem(
+            icon: _buildSvgIcon("assets/icon/home-button.svg", 0),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: _buildSvgIcon("assets/icon/category.svg", 1),
+            label: "Category",
+          ),
+          BottomNavigationBarItem(
+            icon: _buildSvgIcon("assets/icon/boxes.svg", 2),
+            label: "All Products",
+          ),
+          BottomNavigationBarItem(
+            icon: _buildSvgIcon("assets/icon/favorite.svg", 3),
+            label: "Favorite",
+          ),
+          BottomNavigationBarItem(
+            icon: Badge(
+              label: Text(
+                cartController.cartResponse.cart == null ||
+                        cartController.cartResponse.cart!.isEmpty
+                    ? "N/A"
+                    : "${cartController.cartResponse.cart!.length}", // Replace this string with your dynamic count (e.g., cartProvider.count.toString())
+                style: const TextStyle(color: Colors.white, fontSize: 10),
+              ),
+              isLabelVisible: true, // Hide if count is 0
+              backgroundColor: Colors.red,
+              child: _buildSvgIcon("assets/icon/cart.svg", 4),
+            ),
+            label: "Cart",
+          ),
+        ],
+      ),
     );
   }
-Widget _buildSvgIcon(String assetPath, int index) {
-  final bool isActive = _selectedIndex == index;
 
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 4),
-    child: SvgPicture.asset(
-      assetPath,
-      height: 24,
-      width: 24,
-      // If active, null means "show original colors"
-      // If inactive, apply the specific Color(0xFF1E60AA)
-      colorFilter: isActive 
-          ? null 
-          : const ColorFilter.mode(
-              Color(0xFF1E60AA), 
-              BlendMode.srcIn,
-            ),
-    ),
-  );
-}
+  Widget _buildSvgIcon(String assetPath, int index) {
+    final bool isActive = _selectedIndex == index;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: SvgPicture.asset(
+        assetPath,
+        height: 24,
+        width: 24,
+        // If active, null means "show original colors"
+        // If inactive, apply the specific Color(0xFF1E60AA)
+        colorFilter: isActive
+            ? null
+            : const ColorFilter.mode(Color(0xFF1E60AA), BlendMode.srcIn),
+      ),
+    );
+  }
+
   // --- Widgets ---
 }
 
@@ -91,7 +104,7 @@ class ProductCard extends StatelessWidget {
   final String price;
   final String oldPrice;
   final String? tag;
-  final Function()  onTapCart;
+  final Function() onTapCart;
 
   const ProductCard({
     super.key,
@@ -100,7 +113,7 @@ class ProductCard extends StatelessWidget {
     required this.price,
     required this.oldPrice,
     this.tag,
-    required this.onTapCart
+    required this.onTapCart,
   });
 
   @override

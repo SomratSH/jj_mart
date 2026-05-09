@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jj_mart/presentation/home/search_screen.dart';
 import 'package:jj_mart/presentation/landing/landing_page.dart';
 import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:jj_mart/provider/home_provider/home_provider.dart';
@@ -79,6 +80,12 @@ class _AllProductPageState extends State<AllProductPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: TextField(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => SearchScreen()),
+                    );
+                  },
                   decoration: InputDecoration(
                     hintText: "Search any Product...",
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
@@ -117,21 +124,17 @@ class _AllProductPageState extends State<AllProductPage> {
                             itemBuilder: (context, index) {
                               final product = provider.offerProducts[index];
                               return ProductCard(
-                                 onTapCart: ()async{
-           
-      await Provider.of<CartProvider>(context, listen: false).addToCart(
-        context: context,
-        productId: product.slNo,
-        
-        productQty: 1,
-        
-      );
-      
-   
-    
+                                onTapCart: () async {
+                                  await Provider.of<CartProvider>(
+                                    context,
+                                    listen: false,
+                                  ).addToCart(
+                                    context: context,
+                                    productId: product.slNo,
 
- 
-            },
+                                    productQty: 1,
+                                  );
+                                },
                                 tag: "Offer",
                                 imageUrl: product.productImage,
                                 title: product.name,

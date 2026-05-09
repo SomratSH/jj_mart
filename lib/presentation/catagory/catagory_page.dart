@@ -30,9 +30,15 @@ class _CategoryPageState extends State<CategoryPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1E60AA), Color(0xFF64B5F6)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1E60AA), // Deep Blue at top
+              Color(0xFF2E77BD), // Mid Blue
+              Color(0xFFB0C4DE), // Light Steel Blue
+              Color(0xFFE0E5EC), // Light Greyish at bottom
+            ],
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(
@@ -52,34 +58,33 @@ class _CategoryPageState extends State<CategoryPage> {
                 ),
               ),
 
-              // --- Search Bar ---
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 10,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                  ),
-                  child: const TextField(
-                    style: TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: "Search categories...",
-                      hintStyle: TextStyle(color: Colors.white70),
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        color: Colors.white,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 15),
-                    ),
-                  ),
-                ),
-              ),
-
+              // // --- Search Bar ---
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 20.0,
+              //     vertical: 10,
+              //   ),
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       color: Colors.white.withOpacity(0.2),
+              //       borderRadius: BorderRadius.circular(15),
+              //       border: Border.all(color: Colors.white.withOpacity(0.3)),
+              //     ),
+              //     child: const TextField(
+              //       style: TextStyle(color: Colors.white),
+              //       decoration: InputDecoration(
+              //         hintText: "Search categories...",
+              //         hintStyle: TextStyle(color: Colors.white70),
+              //         prefixIcon: Icon(
+              //           Icons.search_rounded,
+              //           color: Colors.white,
+              //         ),
+              //         border: InputBorder.none,
+              //         contentPadding: EdgeInsets.symmetric(vertical: 15),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 10),
 
               // --- Grid View (Dynamic) ---

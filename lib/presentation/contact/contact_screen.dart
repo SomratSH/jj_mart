@@ -5,6 +5,7 @@ import 'package:jj_mart/presentation/contact/about_screen.dart';
 import 'package:jj_mart/presentation/contact/edit_profile.dart';
 import 'package:jj_mart/presentation/contact/terms_screen.dart';
 import 'package:jj_mart/presentation/contact/track_order_screen.dart';
+import 'package:jj_mart/provider/auth_provider/auth_provider.dart';
 import 'package:jj_mart/provider/profile_provider/profile_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +30,7 @@ class _ContactScreenState extends State<ContactScreen> {
   @override
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileProvider>();
+    final controller = context.watch<AuthProvider>();
     final user = profileProvider.profile;
     return Scaffold(
       appBar: AppBar(
@@ -240,7 +242,7 @@ class _ContactScreenState extends State<ContactScreen> {
                         height: 50,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            _showLogoutDialog(context);
+                            _showLogoutDialog(context, controller);
                           },
                           icon: const Icon(
                             Icons.logout,
@@ -348,9 +350,8 @@ class _ContactScreenState extends State<ContactScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, AuthProvider contrller) {
     showDialog(
-      
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
@@ -372,22 +373,26 @@ class _ContactScreenState extends State<ContactScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const JMartSignInScreen(), // change to your login screen
-                ),
-                (route) => false, // removes all previous routes
-              );
+            onPressed: () async {
+              await contrller.logout(context);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logged out successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const JMartSignInScreen(), // change to your login screen
+                  ),
+                  (route) => false, // removes all previous routes
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Logged out successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1565C0),

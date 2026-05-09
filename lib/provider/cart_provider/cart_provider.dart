@@ -7,6 +7,14 @@ import 'package:jj_mart/model/profile_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartProvider with ChangeNotifier {
+  CartProvider() {
+    init();
+  }
+
+  void init() async {
+    await getCartApi();
+  }
+
   Map<String, CartItemModel> _items = {};
   bool _isLoading = false;
 
@@ -78,6 +86,7 @@ class CartProvider with ChangeNotifier {
         // );
 
         if (data["status"] == "success") {
+          getCartApi();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(data["message"]),
