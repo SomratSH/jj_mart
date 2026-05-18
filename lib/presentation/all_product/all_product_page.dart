@@ -23,7 +23,7 @@ class _AllProductPageState extends State<AllProductPage> {
       Provider.of<HomeProvider>(
         context,
         listen: false,
-      ).getOfferProducts(isRefresh: true);
+      ).getAllProducts(isRefresh: true);
     });
 
     // Setup scroll listener for pagination
@@ -31,7 +31,7 @@ class _AllProductPageState extends State<AllProductPage> {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         // Trigger next page when 200px from bottom
-        Provider.of<HomeProvider>(context, listen: false).getOfferProducts();
+        Provider.of<HomeProvider>(context, listen: false).getAllProducts();
       }
     });
   }
@@ -113,7 +113,7 @@ class _AllProductPageState extends State<AllProductPage> {
                           GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: provider.offerProducts.length,
+                            itemCount: provider.allProduct.length,
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
@@ -122,7 +122,7 @@ class _AllProductPageState extends State<AllProductPage> {
                                   mainAxisSpacing: 10,
                                 ),
                             itemBuilder: (context, index) {
-                              final product = provider.offerProducts[index];
+                              final product = provider.allProduct[index];
                               return ProductCard(
                                 onTapCart: () async {
                                   await Provider.of<CartProvider>(
@@ -135,7 +135,7 @@ class _AllProductPageState extends State<AllProductPage> {
                                     productQty: 1,
                                   );
                                 },
-                                tag: "Offer",
+                                tag: "",
                                 imageUrl: product.productImage,
                                 title: product.name,
                                 price: "৳${product.sellingPrice}",

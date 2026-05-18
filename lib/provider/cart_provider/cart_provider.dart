@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jj_mart/model/cart_item_model.dart';
@@ -112,6 +113,135 @@ class CartProvider with ChangeNotifier {
     }
   }
 
+  Future<void> incraseQty({
+    required int productId,
+
+    required BuildContext context,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
+
+    const url = 'https://jmartbd.com/api/shopping_cart/add';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        body: json.encode({"product_id": productId}),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("incrate cart item" + response.body);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (kDebugMode) {
+          debugPrint("Increase qty" + response.body.toString());
+        }
+        // // Parsing the dynamic "cart" map
+        // Map<String, dynamic> cartData = data['cart'];
+        // _items = cartData.map(
+        //   (key, value) => MapEntry(key, CartItemModel.fromJson(value)),
+        // );
+
+        if (data["status"] == "success") {
+          await updateCartApi();
+
+          // cartResponse.cart!.forEach((e){
+          //   if(e.id == productId){
+          //     e.quantity =
+          //   }
+          // })
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data["message"]),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data["message"]),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      print("Error adding to cart: $error");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> decraseQty({
+    required int productId,
+    required int qty,
+
+    required BuildContext context,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
+
+    const url = 'https://jmartbd.com/api/shopping_cart/add';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        body: json.encode({"product_id": productId, "product_quantity": qty}),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // // Parsing the dynamic "cart" map
+        // Map<String, dynamic> cartData = data['cart'];
+        // _items = cartData.map(
+        //   (key, value) => MapEntry(key, CartItemModel.fromJson(value)),
+        // );
+
+        if (data["status"] == "success") {
+          updateCartApi();
+
+          // cartResponse.cart!.forEach((e){
+          //   if(e.id == productId){
+          //     e.quantity =
+          //   }
+          // })
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data["message"]),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data["message"]),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      print("Error adding to cart: $error");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   bool cartLoading = false;
   CartResponse cartResponse = CartResponse();
   Future<void> getCartApi() async {
@@ -155,6 +285,7 @@ class CartProvider with ChangeNotifier {
       );
       if (response.statusCode == 200) {
         print(response.body);
+        cartResponse = CartResponse();
         cartResponse = CartResponse.fromJson(jsonDecode(response.body));
         notifyListeners();
       }
@@ -163,7 +294,7 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<String> removeFromCart(String rowId) async {
+  Future<CartResponse> removeFromCart(String rowId) async {
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString("token");
 
@@ -180,22 +311,35 @@ class CartProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // Better to check for a success flag or any message rather than exact string
-        if (data["message"] != null) {
-          // Refresh the cart data immediately
-          await updateCartApi();
-          return data["message"];
+        if (data["status"] == "success" || data["status_code"] == 200) {
+          // SUCCESS: Parse the updated cart object returned by your backend
+          cartResponse = CartResponse.fromJson(data);
+        } else {
+          // If API fails status check, instantiate an empty object with an empty array rather than null
+          cartResponse = CartResponse(
+            cart: [],
+            message: data["message"] ?? "Failed to remove",
+          );
         }
 
-        return "Product removed";
+        // Tell all listeners (including the BottomNavigationBar) to redraw
+        notifyListeners();
+        return cartResponse;
       } else {
-        // Decode error message from server if available
         final errorData = jsonDecode(response.body);
-        return errorData["message"] ?? "Failed to remove item";
+        return CartResponse(
+          status: "false",
+          message: errorData["message"] ?? "Failed to remove item",
+          cart: cartResponse.cart ?? [], // Keep old data so UI doesn't crash
+        );
       }
     } catch (e) {
       debugPrint("Error removing item: $e");
-      return "Something went wrong";
+      return CartResponse(
+        status: "false",
+        message: "Something went wrong",
+        cart: cartResponse.cart ?? [],
+      );
     }
   }
 
@@ -251,6 +395,41 @@ class CartProvider with ChangeNotifier {
     } catch (e) {
       print("Error placing order: $e");
       return "Please, try ageain";
+    }
+  }
+
+  Future<void> clearCart(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString("token");
+    try {
+      // Replace with your actual URL
+      final response = await http.get(
+        Uri.parse('https://jmartbd.com/api/shopping_cart/clear'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        print(response.body);
+
+        final data = jsonDecode(response.body);
+        if (data["type"] == true && data["status"] == true) {
+          if (context.mounted) {
+            cartResponse = CartResponse();
+            notifyListeners();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(data["message"]),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 1),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching cart: $e");
     }
   }
 }

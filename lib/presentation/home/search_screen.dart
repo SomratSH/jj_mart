@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:async'; // REQUIRED: For the Timer class
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jj_mart/model/top_selling_product.dart'; // Reuse this model
-import 'package:jj_mart/presentation/landing/landing_page.dart'; // For ProductCard
+import 'package:jj_mart/model/top_selling_product.dart';
+import 'package:jj_mart/presentation/landing/landing_page.dart';
 import 'package:provider/provider.dart';
 import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +20,31 @@ class _SearchScreenState extends State<SearchScreen> {
   List<TopSellingProduct> _results = [];
   bool _isLoading = false;
 
+  // --- Debounce Configuration ---
+  Timer? _debounceTimer;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounceTimer?.cancel(); // Always cancel timers when disposing screens
+    super.dispose();
+  }
+
+  // This handles the keystroke waiting logic
+  void _onSearchChanged(String query) {
+    // 1. Cancel the previous timer if the user is still typing
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+
+    // 2. Set up a new timer for 3 seconds
+    _debounceTimer = Timer(const Duration(seconds: 3), () {
+      if (query.isNotEmpty) {
+        _performSearch(query);
+      } else {
+        setState(() => _results = []);
+      }
+    });
+  }
+
   Future<void> _performSearch(String query) async {
     if (query.isEmpty) return;
 
@@ -27,8 +53,7 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final String? token = prefs.getString("token");
-      final String baseUrl =
-          "https://jmartbd.com/api"; // Ensure this matches your Constants
+      final String baseUrl = "https://jmartbd.com/api";
 
       final response = await http.get(
         Uri.parse("$baseUrl/filter_products?search_product=$query"),
@@ -65,10 +90,15 @@ class _SearchScreenState extends State<SearchScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: TextField(
           controller: _searchController,
-          autofocus: true, // Opens keyboard immediately
+          autofocus: true,
           style: const TextStyle(color: Colors.white),
-          textInputAction: TextInputAction.search,
-          onSubmitted: _performSearch,
+          // CHANGED: Combined both real-time typing and keyboard action trigger
+          onChanged: _onSearchChanged,
+          onSubmitted: (value) {
+            _debounceTimer
+                ?.cancel(); // Cancel timer if they explicitly hit enter
+            _performSearch(value);
+          },
           decoration: const InputDecoration(
             hintText: "Search products...",
             hintStyle: TextStyle(color: Colors.white70),
@@ -79,6 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () {
+              _debounceTimer?.cancel();
               _searchController.clear();
               setState(() => _results = []);
             },
@@ -104,7 +135,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   imageUrl: product.productImage,
                   title: product.name,
                   price: "৳${product.sellingPrice}",
-                  oldPrice: "", // Add logic if API provides discount
+                  oldPrice: "",
                   tag: "Result",
                   onTapCart: () {
                     context.read<CartProvider>().addToCart(

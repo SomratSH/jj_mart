@@ -5,6 +5,7 @@ import 'package:jj_mart/presentation/catagory/catagory_page.dart';
 import 'package:jj_mart/presentation/favourite/favourite_page.dart';
 import 'package:jj_mart/presentation/home/home_page.dart';
 import 'package:jj_mart/presentation/profile/profile_page.dart';
+
 import 'package:jj_mart/provider/cart_provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -17,21 +18,30 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
   int _selectedIndex = 0;
-  List<Widget> page = [
-    HomePage(),
-    CategoryPage(),
-    AllProductPage(),
-    FavouritePage(),
-    CartPage(),
-  ];
+
+  // Dynamically returns the active page on build to ensure live state rendering
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return const HomePage();
+      case 1:
+        return const CategoryPage();
+      case 2:
+        return const AllProductPage();
+      case 3:
+        return const FavouritePage();
+      case 4:
+        return const CartPage();
+      default:
+        return const HomePage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cartController = context.watch<CartProvider>();
     return Scaffold(
-      backgroundColor: Colors.white, // Light grey-blue bg
-      // Custom AppBar area
-      body: page[_selectedIndex],
+      backgroundColor: Colors.white,
+      body: _getPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
@@ -58,17 +68,26 @@ class _LandingPageState extends State<LandingPage> {
             label: "Favorite",
           ),
           BottomNavigationBarItem(
-            icon: Badge(
-              label: Text(
-                cartController.cartResponse.cart == null ||
-                        cartController.cartResponse.cart!.isEmpty
-                    ? "N/A"
-                    : "${cartController.cartResponse.cart!.length}", // Replace this string with your dynamic count (e.g., cartProvider.count.toString())
-                style: const TextStyle(color: Colors.white, fontSize: 10),
-              ),
-              isLabelVisible: true, // Hide if count is 0
-              backgroundColor: Colors.red,
-              child: _buildSvgIcon("assets/icon/cart.svg", 4),
+            icon: Consumer<CartProvider>(
+              builder: (context, cartController, child) {
+                // Read array reference lists explicitly
+                final List? cartList = cartController.cartResponse.cart;
+                final int cartLength = (cartList != null && cartList.isNotEmpty)
+                    ? cartList.length
+                    : 0;
+
+                return Badge(
+                  label: Text(
+                    "$cartLength",
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                  isLabelVisible:
+                      cartLength >
+                      0, // Auto-hide badge element frame if zero items
+                  backgroundColor: Colors.red,
+                  child: _buildSvgIcon("assets/icon/cart.svg", 4),
+                );
+              },
             ),
             label: "Cart",
           ),
@@ -86,16 +105,12 @@ class _LandingPageState extends State<LandingPage> {
         assetPath,
         height: 24,
         width: 24,
-        // If active, null means "show original colors"
-        // If inactive, apply the specific Color(0xFF1E60AA)
         colorFilter: isActive
-            ? null
-            : const ColorFilter.mode(Color(0xFF1E60AA), BlendMode.srcIn),
+            ? const ColorFilter.mode(Color(0xFF1E60AA), BlendMode.srcIn)
+            : const ColorFilter.mode(Colors.black, BlendMode.srcIn),
       ),
     );
   }
-
-  // --- Widgets ---
 }
 
 class ProductCard extends StatelessWidget {
@@ -148,32 +163,33 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Discount Ribbon (Simulated)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
+                // Discount Ribbon Check
+                if (tag != null && tag!.isNotEmpty)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                    ),
-                    child: Text(
-                      tag!,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        tag!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 // Heart Icon
                 const Positioned(
                   top: 5,
@@ -222,7 +238,7 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Add to Cart Button
+                // Add to Cart Button Action Target
                 SizedBox(
                   width: double.infinity,
                   height: 30,
@@ -234,9 +250,7 @@ class ProductCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    onPressed: () {
-                      onTapCart();
-                    },
+                    onPressed: onTapCart,
                     child: const Text(
                       "Add To Cart",
                       style: TextStyle(fontSize: 11, color: Colors.white),

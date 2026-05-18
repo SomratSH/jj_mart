@@ -180,16 +180,8 @@ class _LayoutState extends State<Layout> {
 
                         // Clear Cart Button
                         OutlinedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              // cartItems.clear();
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Cart cleared'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                          onPressed: () async {
+                            await controller.clearCart(context);
                           },
                           icon: const Icon(Icons.close, size: 18),
                           label: const Text('Clear Cart'),
@@ -225,7 +217,8 @@ class _LayoutState extends State<Layout> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                profileProvider.profile!.customerAddress ?? "N/A",
+                                profileProvider.profile!.customerAddress ??
+                                    "N/A",
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.black87,
@@ -321,6 +314,13 @@ class _LayoutState extends State<Layout> {
   }
 
   Widget _buildCartItem(Cart item, int index, CartProvider provider) {
+    // 1. Parse and sanitize pricing details securely
+    final double basePrice =
+        double.tryParse(item.price?.toString() ?? '0.0') ?? 0.0;
+    final double discount =
+        double.tryParse(item.discountAmount?.toString() ?? '0.0') ?? 0.0;
+    final double finalPrice = basePrice - discount;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -337,11 +337,22 @@ class _LayoutState extends State<Layout> {
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Image.network(
-              item.image!,
-              errorBuilder: (context, error, stackTrace) =>
-                  Image.asset("assets/image/no_image_found.png"),
-            ),
+            child: item.image != null && item.image!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      item.image!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        "assets/image/no_image_found.png",
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                : Image.asset(
+                    "assets/image/no_image_found.png",
+                    fit: BoxFit.cover,
+                  ),
           ),
 
           const SizedBox(width: 12),
@@ -352,7 +363,9 @@ class _LayoutState extends State<Layout> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.name!,
+                  item.name ?? "Unknown Product",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -360,13 +373,30 @@ class _LayoutState extends State<Layout> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '৳${item.price!.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
+
+                // Price Layout with Discount Check
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  children: [
+                    Text(
+                      '৳${finalPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                    if (discount > 0)
+                      Text(
+                        '৳${basePrice.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -382,12 +412,19 @@ class _LayoutState extends State<Layout> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.remove, size: 16),
-                  onPressed: () {
-                    setState(() {
-                      if (item.quantity! > 1) {
-                        // item.quantity--;
-                      }
-                    });
+                  onPressed: () async {
+                    int currentQty =
+                        int.tryParse(item.quantity?.toString() ?? '1') ?? 1;
+                    if (currentQty > 1) {
+                      currentQty--;
+                      await provider.decraseQty(
+                        productId: item.id!,
+                        qty: currentQty,
+                        context: context,
+                      );
+                      // Call your provider method here to decrement quantity
+                      // e.g., provider.updateCartQuantity(item.rowId!, currentQty - 1);
+                    }
                   },
                   padding: const EdgeInsets.all(4),
                   constraints: const BoxConstraints(),
@@ -395,7 +432,7 @@ class _LayoutState extends State<Layout> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
-                    '${item.quantity}',
+                    '${item.quantity ?? 1}',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -404,10 +441,23 @@ class _LayoutState extends State<Layout> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add, size: 16),
-                  onPressed: () {
-                    setState(() {
-                      // item.quantity++;
-                    });
+                  onPressed: () async {
+                    final int currentQty =
+                        int.tryParse(item.quantity?.toString() ?? '1') ?? 1;
+                    final int stock =
+                        int.tryParse(
+                          item.availableStock?.toString() ?? '999',
+                        ) ??
+                        999;
+
+                    if (currentQty < stock) {
+                      await provider.incraseQty(
+                        productId: item.id!,
+                        context: context,
+                      );
+                      // Call your provider method here to increment quantity
+                      // e.g., provider.updateCartQuantity(item.rowId!, currentQty + 1);
+                    }
                   },
                   padding: const EdgeInsets.all(4),
                   constraints: const BoxConstraints(),
@@ -421,14 +471,23 @@ class _LayoutState extends State<Layout> {
           // Delete Button
           InkWell(
             onTap: () async {
-              final response = await provider.removeFromCart(item.rowId!);
+              if (item.rowId == null) return;
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(response),
-                  backgroundColor: Colors.green,
-                ),
+              final CartResponse response = await provider.removeFromCart(
+                item.rowId!,
               );
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(response.message ?? "Product removed"),
+                    backgroundColor:
+                        response.statusCode == 200 || response.status == "true"
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                );
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(8),

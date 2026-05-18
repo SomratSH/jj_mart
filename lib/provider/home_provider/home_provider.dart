@@ -59,6 +59,7 @@ class HomeProvider extends ChangeNotifier {
   bool _isFetchingMoreOffers = false;
   bool _hasMoreOffers = true;
   bool get isFetchingMoreOffers => _isFetchingMoreOffers;
+
   Future<void> getOfferProducts({bool isRefresh = false}) async {
     if (isRefresh) {
       _currentOfferPage = 1;
@@ -102,6 +103,62 @@ class HomeProvider extends ChangeNotifier {
               .toList();
 
           _offerProducts.addAll(newProducts);
+          _currentOfferPage++; // Increment for next scroll trigger
+        }
+      }
+    } catch (e) {
+      debugPrint("Offer Product Error: $e");
+    } finally {
+      _isLoading = false;
+      _isFetchingMoreOffers = false;
+      notifyListeners();
+    }
+  }
+
+  List<OfferProductModel> _allProudct = [];
+  List<OfferProductModel> get allProduct => _allProudct;
+  Future<void> getAllProducts({bool isRefresh = false}) async {
+    if (isRefresh) {
+      _currentOfferPage = 1;
+      _offerProducts = [];
+      _hasMoreOffers = true;
+      _isLoading = true; // Show full screen loader only on first load
+    }
+
+    // Prevent duplicate calls or calling when no more data
+    if (_isFetchingMoreOffers || !_hasMoreOffers) return;
+
+    _isFetchingMoreOffers = true;
+    notifyListeners();
+
+    final url = Uri.parse(
+      "$baseUrl/filter_products?page=$_currentOfferPage&page_items=15",
+    );
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? token = prefs.getString("token");
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final decoded = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && decoded["status"] == true) {
+        List<dynamic> data = decoded["data"];
+        if (data.isEmpty) {
+          _hasMoreOffers = false;
+        } else {
+          List<OfferProductModel> newProducts = data
+              .map((item) => OfferProductModel.fromJson(item))
+              .toList();
+
+          _allProudct.addAll(newProducts);
           _currentOfferPage++; // Increment for next scroll trigger
         }
       }
