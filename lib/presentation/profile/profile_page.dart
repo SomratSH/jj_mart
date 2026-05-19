@@ -9,12 +9,7 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CartProvider()
-        ..getCartApi()
-        ..fetchProfile(),
-      child: Layout(),
-    );
+    return Layout();
   }
 }
 
@@ -208,7 +203,7 @@ class _LayoutState extends State<Layout> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Confirm Delivery Address',
+                                'Delivery Address',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -257,50 +252,92 @@ class _LayoutState extends State<Layout> {
 
                         // Place Order Button
                         ElevatedButton(
-                          onPressed: () async {
-                            if (controller.cartResponse.cart!.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Cart is empty'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            }
-                            final response = await controller.placeOrder(
-                              address:
-                                  controller.profile!.customerAddress ?? "N/A",
-                              phone: controller.profile!.customerMobile!,
-                              name: controller.profile!.customerName!,
-                              paymentType: 1, // 1 for Cash
-                              areaId: int.parse(
-                                controller.profile!.areaId!.toString(),
-                              ),
-                            );
+                          // 1. Block interactions if provider reports active network process loading
+                          onPressed: controller.plaseOrderLoading
+                              ? null
+                              : () async {
+                                  final cartList = controller.cartResponse.cart;
+                                  if (cartList == null || cartList.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Cart is empty'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    return;
+                                  }
 
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(response),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          },
+                                  if (controller.profile == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Profile information not found',
+                                        ),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  // 2. Just call the method. The provider manages the loading lifecycle flags internally
+                                  final response = await controller.placeOrder(
+                                    address:
+                                        controller.profile!.customerAddress ??
+                                        "N/A",
+                                    phone:
+                                        controller.profile!.customerMobile ??
+                                        "N/A",
+                                    name:
+                                        controller.profile!.customerName ??
+                                        "Customer",
+                                    paymentType: 1,
+                                    areaId:
+                                        int.tryParse(
+                                          controller.profile!.areaId
+                                                  ?.toString() ??
+                                              '0',
+                                        ) ??
+                                        0,
+                                  );
+
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(response),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1565C0),
+                            disabledBackgroundColor: const Color(
+                              0xFF1565C0,
+                            ).withOpacity(0.6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Place Order',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                          // 3. Listen to the provider state variable to swap text out for a Loader
+                          child: controller.plaseOrderLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  'Place Order',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
 
                         const SizedBox(height: 20),

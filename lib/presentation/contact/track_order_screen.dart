@@ -36,9 +36,9 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
         };
       case 'a':
         return {
-          'label': 'Approved',
-          'color': Colors.blue,
-          'filter': 'Processing',
+          'label': 'Confirmed',
+          'color': Colors.green,
+          'filter': 'Confirmed',
         };
       case 'c':
         return {
@@ -86,7 +86,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                 const SizedBox(width: 4),
                 _buildFilterButton('Pending'),
                 const SizedBox(width: 4),
-                _buildFilterButton('Processing'),
+                _buildFilterButton('Cancel'),
                 const SizedBox(width: 4),
                 _buildFilterButton('Delivered'),
               ],

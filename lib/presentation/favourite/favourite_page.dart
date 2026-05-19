@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jj_mart/presentation/home/home_page.dart';
+import 'package:jj_mart/presentation/home/search_screen.dart';
 
 class FavouritePage extends StatelessWidget {
   const FavouritePage({super.key});
@@ -38,6 +39,16 @@ class FavouritePage extends StatelessWidget {
                     ),
                   ),
                   TextField(
+                    readOnly:
+                        true, // Prevents keyboard from opening on HomePage
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SearchScreen(),
+                        ),
+                      );
+                    },
                     decoration: InputDecoration(
                       hintText: "Search any Product...",
                       hintStyle: TextStyle(

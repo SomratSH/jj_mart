@@ -343,6 +343,8 @@ class CartProvider with ChangeNotifier {
     }
   }
 
+  bool plaseOrderLoading = false;
+
   Future<String> placeOrder({
     required String address,
     required String phone,
@@ -350,6 +352,8 @@ class CartProvider with ChangeNotifier {
     required int paymentType,
     required int areaId,
   }) async {
+    plaseOrderLoading = true;
+    notifyListeners();
     final url = Uri.parse('https://jmartbd.com/api/shopping_cart/placeOrder');
 
     try {
@@ -384,12 +388,14 @@ class CartProvider with ChangeNotifier {
         print("Order Success: ${responseData['message']}");
 
         cartResponse = CartResponse();
-
+        plaseOrderLoading = false;
         notifyListeners();
         return responseData['message'];
         // Navigate to a success screen or show a dialog
       } else {
         print("Order Failed: ${responseData['message']}");
+        plaseOrderLoading = false;
+        notifyListeners();
         return responseData['message'];
       }
     } catch (e) {

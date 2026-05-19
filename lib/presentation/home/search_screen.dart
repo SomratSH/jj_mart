@@ -36,7 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
 
     // 2. Set up a new timer for 3 seconds
-    _debounceTimer = Timer(const Duration(seconds: 3), () {
+    _debounceTimer = Timer(const Duration(seconds: 2), () {
       if (query.isNotEmpty) {
         _performSearch(query);
       } else {

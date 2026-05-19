@@ -30,7 +30,7 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<AuthProvider>();
-
+    
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -70,6 +70,11 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                   child: Image.asset(
                     'assets/logo/logo.png',
                     height: 60,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.shopping_bag,
+                      size: 60,
+                      color: Color(0xFF1E60AA),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 25),
@@ -108,6 +113,33 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                       ),
                       const SizedBox(height: 25),
 
+                      // Account Type Selection Header
+                      _buildInputLabel("Account Type"),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildAccountTypeCard(
+                              title: "Retail",
+                              subtitle: "Individual Customer",
+                              icon: Icons.person_pin_rounded,
+                              isSelected: controller.customerType == "retail",
+                              onTap: () => controller.setCustomerType("retail"),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildAccountTypeCard(
+                              title: "Wholesale",
+                              subtitle: "Bulk Business Buyer",
+                              icon: Icons.store_rounded,
+                              isSelected: controller.customerType == "wholesale",
+                              onTap: () => controller.setCustomerType("wholesale"),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
                       // Name Field
                       _buildInputLabel("Full Name"),
                       _buildTextField(
@@ -137,15 +169,13 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                           border: Border.all(color: Colors.grey.shade200),
                         ),
                         child: DropdownButtonFormField<AreaModel>(
-                          
                           value: controller.selectedArea,
-                          hint: Text('Select your area', 
+                          hint: Text('Select your area',
                               style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
                           icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: Color(0xFF1E60AA)),
                           decoration: const InputDecoration(border: InputBorder.none,),
                           items: controller.areas.map((AreaModel area) {
                             return DropdownMenuItem<AreaModel>(
-
                               value: area,
                               child: Text(area.name, style: const TextStyle(fontSize: 14)),
                             );
@@ -184,12 +214,11 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
                         child: ElevatedButton(
                           onPressed: controller.isLoading
                               ? null
-                              : () async {
-                                  _handleRegister(controller);
-                                },
+                              : () => _handleRegister(controller),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1E60AA),
                             foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(0xFF1E60AA).withOpacity(0.6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -250,6 +279,57 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
     );
   }
 
+  Widget _buildAccountTypeCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1E60AA).withOpacity(0.08) : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1E60AA) : Colors.grey.shade200,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF1E60AA) : Colors.grey.shade400,
+              size: 28,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? const Color(0xFF1E60AA) : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                color: isSelected ? const Color(0xFF1E60AA).withOpacity(0.8) : Colors.grey.shade500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -302,11 +382,11 @@ class _JMartCreateAccountScreenState extends State<JMartCreateAccountScreen> {
         address.isEmpty ||
         password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please fill in all fields'),
+        const SnackBar(
+          content: Text('Please fill in all fields'),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(20),
+          margin: EdgeInsets.all(20),
         ),
       );
       return;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jj_mart/model/areas_model.dart';
@@ -16,6 +17,14 @@ class AuthProvider extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+String _customerType = "retail";
+  String get customerType => _customerType;
+
+  void setCustomerType(String type) {
+    _customerType = type;
+    notifyListeners(); // Forces UI card state styles to switch dynamically
   }
 
   Future<void> register({
@@ -36,7 +45,7 @@ class AuthProvider extends ChangeNotifier {
       "user_password": password,
       "user_address": address,
       "area_id": areaId,
-      "customer_type": "wholesale",
+      "customer_type":_customerType,
     };
 
     try {
@@ -180,7 +189,9 @@ class AuthProvider extends ChangeNotifier {
         Uri.parse('https://jmartbd.com/api/areas'),
         headers: {'Content-Type': 'application/json'},
       );
-      print(response);
+     if(kDebugMode){
+      debugPrint(response.body);
+     }
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         if (responseData['status'] == true) {

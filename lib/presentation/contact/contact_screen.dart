@@ -79,35 +79,80 @@ class _ContactScreenState extends State<ContactScreen> {
               ),
               child: ClipOval(
                 child:
-                    (user?.customerImage != null &&
-                        user!.customerImage!.isNotEmpty)
-                    ? Image.network(
-                        user.customerImage!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.person, size: 50),
-                      )
-                    : Icon(Icons.person, size: 50, color: Colors.grey.shade600),
+                    // (user?.customerImage != null &&
+                    //     user!.customerImage!.isNotEmpty)
+                    // ? Image.network(
+                    //     user.customerImage!,
+                    //     fit: BoxFit.cover,
+                    //     errorBuilder: (context, error, stackTrace) =>
+                    //         const Icon(Icons.person, size: 50),
+                    //   )
+                    // :
+                    Icon(Icons.person, size: 50, color: Colors.grey.shade600),
               ),
             ),
 
             const SizedBox(height: 12),
 
             // User Name - Dynamic
-            Text(
-              user?.customerName ?? 'Guest User',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              user?.customerMobile ?? '',
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 30),
+          Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 1. Account Type Tag (Placed cleanly at the top)
+                if (user?.customerType != null && user!.customerType!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: user!.customerType!.toLowerCase() == "wholesale"
+                            ? const Color(0xFFFF6D00) // Vibrant Orange
+                            : const Color(0xFF00C853), // Emerald Green
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                      ),
+                      child: Text(
+                        user!.customerType!.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
 
+                // 2. User Name
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    user?.customerName ?? 'Guest User',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                
+                const SizedBox(height: 4),
+
+                // 3. Mobile Number
+                Text(
+                  user?.customerMobile ?? 'No Mobile Number',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85), 
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
             // White Container with Options
             Expanded(
               child: Container(
@@ -145,7 +190,8 @@ class _ContactScreenState extends State<ContactScreen> {
                               icon: Icons.person,
                               iconColor: const Color(0xFF1565C0),
                               title: 'Edit profile',
-                              onTap: () {
+                              onTap: () async {
+                                await controller.fetchAreas();
                                 print('Edit profile tapped');
                                 Navigator.push(
                                   context,

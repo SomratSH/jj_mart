@@ -95,11 +95,13 @@ Widget _buildCustomAppBar(BuildContext context, String profilePicture) {
                 MaterialPageRoute(builder: (_) => ContactScreen()),
               ),
               child: CircleAvatar(
-                backgroundImage: profilePicture.isNotEmpty
-                    ? NetworkImage(profilePicture)
-                    : NetworkImage(
-                        "https://supershop.jmartbd.com//uploads//noImage.png",
-                      ),
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person),
+                // backgroundImage: profilePicture.isNotEmpty
+                //     ? NetworkImage(profilePicture)
+                //     : NetworkImage(
+                //         "https://supershop.jmartbd.com//uploads//noImage.png",
+                //       ),
                 radius: 18,
               ),
             ),

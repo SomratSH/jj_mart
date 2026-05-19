@@ -46,11 +46,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       text: userProfile?.customerEmail ?? '',
     );
 
-    authProvider.areas.forEach((e) {
+    for (var e in authProvider.areas) {
       if (e.id == userProfile?.areaId) {
         selectedAreaName = e.name;
       }
-    });
+    }
 
     selectedAreaId = userProfile?.areaId;
   }
@@ -171,22 +171,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.orange,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                // Positioned(
+                //   bottom: 0,
+                //   right: 0,
+                //   child: Container(
+                //     padding: const EdgeInsets.all(4),
+                //     decoration: const BoxDecoration(
+                //       color: Colors.orange,
+                //       shape: BoxShape.circle,
+                //     ),
+                //     child: const Icon(
+                //       Icons.camera_alt,
+                //       size: 16,
+                //       color: Colors.white,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
 
