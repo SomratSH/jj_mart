@@ -67,7 +67,7 @@ class _AllProductPageState extends State<AllProductPage> {
               const SizedBox(height: 10),
               const Center(
                 child: Text(
-                  "Offer Products",
+                  "All Products",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,

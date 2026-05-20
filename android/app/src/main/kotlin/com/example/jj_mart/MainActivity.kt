@@ -1,4 +1,4 @@
-package com.example.jj_mart
+package com.app.jmartbd
 
 import io.flutter.embedding.android.FlutterActivity
 
